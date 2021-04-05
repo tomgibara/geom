@@ -73,12 +73,16 @@ public class EllipticalArc extends Curve {
 
 	@Override
 	public Vector tangentAt(float p) {
-		if (geom.isCircular()) {
-			float ra = startAngle > finishAngle ? - Angles.PI_BY_TWO : + Angles.PI_BY_TWO;
-			float angle = angle(clamp(p)) * TWO_PI + ra;
-			return new Vector(angle);
-		}
-		return super.tangentAt(p);
+		float ra = startAngle > finishAngle ? - Angles.PI_BY_TWO : + Angles.PI_BY_TWO;
+		float angle = angle(clamp(p)) * TWO_PI + ra;
+		Vector tangent = new Vector(angle);
+		Transform transform = geom.getTransform();
+		//TODO how to optimize?
+		Point pt1 = pointAt(p);
+		Point pt2 = tangent.translate(pt1);
+		pt1 = transform.transform(pt1);
+		pt2 = transform.transform(pt2);
+		return pt2.vectorFrom(pt1).normalized();
 	}
 
 	@Override

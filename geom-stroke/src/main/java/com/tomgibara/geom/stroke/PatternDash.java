@@ -1,6 +1,9 @@
 package com.tomgibara.geom.stroke;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import com.tomgibara.geom.floats.FloatRange;
 import com.tomgibara.geom.path.Path;
@@ -31,6 +34,14 @@ public class PatternDash implements Dash {
 	private PatternDash(float length, FloatRange... ranges) {
 		this.length = length;
 		this.ranges = ranges;
+	}
+
+	public float getLength() {
+		return length;
+	}
+
+	public List<FloatRange> getRanges() {
+		return Collections.unmodifiableList( Arrays.asList(ranges) );
 	}
 
 	@Override

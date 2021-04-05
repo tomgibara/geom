@@ -168,7 +168,7 @@ public class Context {
 		float tolerance = tolerances.getCornerTolerance();
 		if (tolerance == 0f) return !v1.equals(v2);
 		float dot = v1.dot(v2);
-		return Math.abs(1f - dot) < tolerance;
+		return Math.abs(1f - dot) > tolerance;
 	}
 
 	private boolean testApproxLinear(Path path) {

@@ -51,6 +51,10 @@ public class SequencePath implements CompositePath {
 			return remainingPoints == null ? remainingPoints = Collections.unmodifiableCollection(points) : remainingPoints;
 		}
 
+		public Point getEndpoint() {
+			return endpoint;
+		}
+
 		public Builder addPath(Path path) {
 			if (path == null) throw new IllegalArgumentException("null path");
 			checkNoPoints();
@@ -461,7 +465,7 @@ public class SequencePath implements CompositePath {
 				Path p2 = paths[i + 1];
 				Vector v1 = p1.byIntrinsic().tangentAt(1f);
 				Vector v2 = p2.byIntrinsic().tangentAt(0f);
-				boolean smooth = context.isCorner(v1, v2);
+				boolean smooth = !context.isCorner(v1, v2);
 				if (!smooth) { // flush accumulated paths we know the end in a corner
 					list.add(new SequencePath(false, acc));
 					acc.clear();

@@ -2,7 +2,7 @@ package com.tomgibara.geom.floats;
 
 public interface FloatMapping {
 
-	public static class Util {
+	class Util {
 
 		private static void checkRange(FloatRange range) {
 			if (range == null) throw new IllegalArgumentException("null domain");
@@ -20,7 +20,7 @@ public interface FloatMapping {
 
 		public static FloatMapping constant(FloatRange domain, float c) {
 			checkRange(domain);
-			if (domain.getSize() == 0f && domain.containsValue(c)) return new Identity(domain);
+			if (domain.isZeroSize() && domain.containsValue(c)) return new Identity(domain);
 			return new Constant(domain, c);
 		}
 
@@ -100,6 +100,20 @@ public interface FloatMapping {
 				return this;
 			}
 
+			@Override
+			public boolean isIdentity() {
+				return true;
+			}
+
+			@Override
+			public boolean isConstant() {
+				return false;
+			}
+
+			@Override
+			public boolean isLinear() {
+				return true;
+			}
 		}
 
 		private static class Constant implements FloatMapping {
@@ -141,6 +155,20 @@ public interface FloatMapping {
 				return "constant " + range.min + " on " + domain;
 			}
 
+			@Override
+			public boolean isIdentity() {
+				return false;
+			}
+
+			@Override
+			public boolean isConstant() {
+				return true;
+			}
+
+			@Override
+			public boolean isLinear() {
+				return true;
+			}
 		}
 
 		private static class Linear implements FloatMapping {
@@ -194,6 +222,21 @@ public interface FloatMapping {
 			}
 
 			@Override
+			public boolean isIdentity() {
+				return false;
+			}
+
+			@Override
+			public boolean isConstant() {
+				return false;
+			}
+
+			@Override
+			public boolean isLinear() {
+				return true;
+			}
+
+			@Override
 			public String toString() {
 				return "linear: " + domain.min + "," + y1 + " to " + domain.max + "," + y2;
 			}
@@ -233,6 +276,20 @@ public interface FloatMapping {
 				return new Compose(inv2, inv1);
 			}
 
+			@Override
+			public boolean isIdentity() {
+				return false;
+			}
+
+			@Override
+			public boolean isConstant() {
+				return false;
+			}
+
+			@Override
+			public boolean isLinear() {
+				return false;
+			}
 		}
 
 	}
@@ -244,5 +301,11 @@ public interface FloatMapping {
 	float map(float x);
 
 	FloatMapping inverse();
+
+	boolean isIdentity();
+
+	boolean isConstant();
+
+	boolean isLinear();
 
 }

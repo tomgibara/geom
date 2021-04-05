@@ -40,6 +40,10 @@ public class Outline {
 		this.width = FloatMapping.Util.constant(FloatRange.UNIT_CLOSED, width);
 	}
 
+	public float fixedWidth() {
+		return width.isConstant() ? width.getRange().min : -1f;
+	}
+
 	public Outline getReverse() {
 		FloatRange domain = width.getDomain();
 		FloatMapping remapping = FloatMapping.Util.linear(domain, domain.max, domain.min);
@@ -128,7 +132,9 @@ public class Outline {
 			int subpathCount = subpaths.size();
 			Path previous = null;
 			Point previousCenter = null;
-			if (subpathCount != cornerCount + 1) throw new IllegalStateException("subpaths: " + subpathCount + "  corners: " + cornerCount);
+			if (subpathCount != cornerCount + 1) {
+				throw new IllegalStateException("subpaths: " + subpathCount + "  corners: " + cornerCount);
+			}
 			for (int i = 0; i < cornerCount; i++) {
 				Path.Corner corner = corners.get(i);
 				float finishP = corner.getParameter();

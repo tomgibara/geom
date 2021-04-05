@@ -99,7 +99,7 @@ public class AWTUtil {
 		return toAffineTransform(t).createTransformedShape(basisCircle);
 	}
 
-	public static Ellipse fromEllipse(Ellipse2D.Float ellipse) {
+	public static Ellipse fromEllipse(Ellipse2D ellipse) {
 		return Ellipse.fromRect(fromRectangle(ellipse.getBounds2D()));
 	}
 

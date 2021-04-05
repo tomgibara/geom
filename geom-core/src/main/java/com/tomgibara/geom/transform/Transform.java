@@ -18,7 +18,6 @@ public final class Transform implements Transformable {
 	private static final int SCALE_PRESERVING = 4;  //  m00 * m11 - m10 * m01 == 1
 
 	private static final int APPLY_MASK          = ORIGIN_PRESERVING | SKEW_PRESERVING | SCALE_PRESERVING;
-	private static final int APPLY_NO_TRANS_MASK =                     SKEW_PRESERVING | SCALE_PRESERVING;
 
 	private static final int CHIRAL_PRESERVING = 8;  //  m00 * m11 - m10 * m01 > 0
 	private static final int CIRCLE_PRESERVING = 16;  //  m10 == -m01 and m00 == m11
@@ -624,7 +623,11 @@ public final class Transform implements Transformable {
 	private Pair transformImpl(Pair pair) {
 		float x = pair.x;
 		float y = pair.y;
-		switch (flags & (pair.noTrans ? APPLY_NO_TRANS_MASK : APPLY_MASK)) {
+
+		int flags = this.flags;
+		if (pair.noTrans) flags |= ORIGIN_PRESERVING;
+		flags &= APPLY_MASK;
+		switch (flags) {
 
 		// non-translations
 

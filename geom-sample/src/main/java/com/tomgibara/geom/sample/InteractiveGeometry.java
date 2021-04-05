@@ -105,6 +105,20 @@ public class InteractiveGeometry extends JFrame {
 			return scale * (float) Math.sin(x * Angles.PI);
 		}
 
+		@Override
+		public boolean isLinear() {
+			return false;
+		}
+
+		@Override
+		public boolean isConstant() {
+			return false;
+		}
+
+		@Override
+		public boolean isIdentity() {
+			return false;
+		}
 	};
 
 	public static void main(String[] args) {
@@ -195,6 +209,10 @@ public class InteractiveGeometry extends JFrame {
 	}
 
 	void addEllipticalArc() {
+		shapes.add(new MutableShape(ShapeType.ELLIPTICAL_ARC, null, new Point(300,200), new Point(400, 200), new Point(300, 130)));
+	}
+
+	void addEllipse() {
 		shapes.add(new MutableShape(ShapeType.ELLIPTICAL, null, new Point(300,200), new Point(400, 200), new Point(300, 130)));
 	}
 
@@ -717,6 +735,7 @@ public class InteractiveGeometry extends JFrame {
 		SEQUENCE,
 		RECT,
 		SPIRAL,
+		ELLIPTICAL_ARC,
 		ELLIPTICAL,
 		ARC,
 		BOUNDED_DLS,
@@ -823,7 +842,7 @@ public class InteractiveGeometry extends JFrame {
 				float b = v2.getMagnitude();
 				return Spiral.from(center, theta, phi, a, b).getPath();
 			}
-			case ELLIPTICAL:
+			case ELLIPTICAL_ARC: {
 				Point c = points[0];
 				Point a = points[1];
 				Point b = points[2];
@@ -854,8 +873,21 @@ public class InteractiveGeometry extends JFrame {
 				//System.out.println("MAJ " + geom.getMajorRadius() + " MIN " + geom.getMinorRadius());
 //				System.out.println(geom.getMajorRadius() + " " + geom.getMinorRadius());
 				Transform basis = geom.getTransform().getEigenBasis();
-				geom = Ellipse.fromTransform( basis.apply(geom.getTransform()) );
+				geom = Ellipse.fromTransform(basis.apply(geom.getTransform()));
 				return geom.arc(0, 0.9f).getPath();
+			}
+			case ELLIPTICAL: {
+				Point c = points[0];
+				Point a = points[1];
+				Point b = points[2];
+				Vector v1 = a.vectorFrom(c);
+				Vector v2 = b.vectorFrom(c);
+				Transform t = Transform.components(v1.x, v1.y, v2.x, v2.y, c.x, c.y);
+				Ellipse geom = Ellipse.fromTransform(t);
+				Transform basis = geom.getTransform().getEigenBasis();
+				geom = Ellipse.fromTransform( basis.apply(geom.getTransform()) );
+				return geom.completeArc().getPath();
+				}
 			case ARC:
 				return EllipticalArc.circularArcThroughThreePoints(points[0], points[1], points[2]).getPath();
 			case BOUNDED_DLS: {

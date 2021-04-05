@@ -118,6 +118,16 @@ public final class Vector implements Transformable {
 		return new Vector(x * s, y * s, 1f);
 	}
 
+	public Vector strictlyNormalized() {
+		if (isUnit()) return this;
+		if (isZero()) {
+			throw new IllegalStateException("cannot normalize zero vector");
+		}
+		float s = 1f / getMagnitude();
+		if (Float.isInfinite(s)) throw new IllegalStateException("normalization failed on underflow");
+		return new Vector(x * s, y * s, 1f);
+	}
+
 	public Vector add(Vector v) {
 		if (this.isZero()) return v;
 		if (v.isZero()) return this;
