@@ -17,14 +17,14 @@ public class Locator {
 		this.path = path;
 	}
 
-	public float getNearestLengthAlongPath(Point pt) {
+	public double getNearestLengthAlongPath(Point pt) {
 		if (pt == null) throw new IllegalArgumentException("null pt");
 		Stack stack = evaluate(pt, new Stack(path));
 		if (stack == null) throw new IllegalStateException();
-		float d = stack.parameter;
+		double d = stack.parameter;
 		stack = stack.stack;
 		while (stack != null) {
-			float length = stack.path.getLength();
+			double length = stack.path.getLength();
 			d += length;
 			stack = stack.stack;
 		}
@@ -37,23 +37,23 @@ public class Locator {
 		if (simplified.isLinear()) {
 			LinearPath linear = simplified.getLinear();
 			Point nearest = linear.nearestPointTo(pt);
-			float dist = norm.distanceBetween(nearest, pt);
+			double dist = norm.distanceBetween(nearest, pt);
 			if (dist <= stack.distance) return stack.replaceMatch(linear, dist, norm.distanceBetween(nearest, linear.getStart()));
 			return null;
 		} else {
 			SplitPath split = simplified.getSplit();
 			Path first = split.getFirstPath();
 			Path second = split.getLastPath();
-			float firstDistLB = norm.distanceBetween(pt, first.getBounds().nearestPointTo(pt, false));
-			float secondDistLB = norm.distanceBetween(pt, second.getBounds().nearestPointTo(pt, false));
+			double firstDistLB = norm.distanceBetween(pt, first.getBounds().nearestPointTo(pt, false));
+			double secondDistLB = norm.distanceBetween(pt, second.getBounds().nearestPointTo(pt, false));
 			boolean firstPossible = firstDistLB <= stack.distance;
 			boolean secondPossible = secondDistLB <= stack.distance;
 			if (!firstPossible && !secondPossible) return null;
-			float firstDistUB = norm.distanceBetween(pt, first.getBounds().furthestPointTo(pt));
+			double firstDistUB = norm.distanceBetween(pt, first.getBounds().furthestPointTo(pt));
 			if (firstPossible && !secondPossible) {
 				return evaluate(pt, stack.replacePossible(first, firstDistUB));
 			}
-			float secondDistUB = norm.distanceBetween(pt, second.getBounds().furthestPointTo(pt));
+			double secondDistUB = norm.distanceBetween(pt, second.getBounds().furthestPointTo(pt));
 			if (!firstPossible) {
 				stack = stack.replacePossible(first, firstDistUB);
 				return evaluate(pt, stack.addPossible(second, secondDistUB));
@@ -73,32 +73,32 @@ public class Locator {
 
 		final Stack stack;
 		final Path path;
-		final float distance;
-		final float parameter; // -1 if distance is just an upper bound
+		final double distance;
+		final double parameter; // -1 if distance is just an upper bound
 
 		Stack(Path path) {
 			this.path = path;
 			stack = null;
-			distance = Float.POSITIVE_INFINITY;
-			parameter = -1f;
+			distance = Double.POSITIVE_INFINITY;
+			parameter = -1.0;
 		}
 
-		private Stack(Stack stack, Path path, float distance, float parameter) {
+		private Stack(Stack stack, Path path, double distance, double parameter) {
 			this.stack = stack;
 			this.path = path;
 			this.distance = distance;
 			this.parameter = parameter;
 		}
 
-		Stack addPossible(Path path, float distance) {
-			return new Stack(this, path, Math.min(distance, this.distance), -1f);
+		Stack addPossible(Path path, double distance) {
+			return new Stack(this, path, Math.min(distance, this.distance), -1.0);
 		}
 
-		Stack replacePossible(Path path, float distance) {
-			return new Stack(stack, path,  Math.min(distance, this.distance), -1f);
+		Stack replacePossible(Path path, double distance) {
+			return new Stack(stack, path,  Math.min(distance, this.distance), -1.0);
 		}
 
-		Stack replaceMatch(Path path, float distance, float parameter) {
+		Stack replaceMatch(Path path, double distance, double parameter) {
 			return new Stack(stack, path,  distance, parameter);
 		}
 

@@ -31,7 +31,7 @@ public final class SingletonPath implements CompositePath {
 	}
 
 	@Override
-	public float getLength() {
+	public double getLength() {
 		return path.getLength();
 	}
 
@@ -118,7 +118,7 @@ public final class SingletonPath implements CompositePath {
 	}
 
 	@Override
-	public Path.Location locateAtLength(float p) {
+	public Path.Location locateAtLength(double p) {
 		return new Path.Location(path.byLength(), p);
 	}
 

@@ -12,7 +12,7 @@ import com.tomgibara.geom.transform.Transform;
 
 public class RectPath implements Path {
 
-	public static final RectPath fromRect(Rect rect, boolean positiveRotation) {
+	public static RectPath fromRect(Rect rect, boolean positiveRotation) {
 		if (rect == null) throw new IllegalArgumentException("null rect");
 		return new RectPath(rect, positiveRotation);
 	}
@@ -63,8 +63,8 @@ public class RectPath implements Path {
 	public PathTraces getGeometry() {
 		if (geometry == null) {
 			LineSegment[] segments = new LineSegment[4];
-			boolean nonZeroWidth = rect.getWidth() != 0f;
-			boolean nonZeroHeight = rect.getHeight() != 0f;
+			boolean nonZeroWidth = rect.getWidth() != 0.0;
+			boolean nonZeroHeight = rect.getHeight() != 0.0;
 			if (positiveRotation) {
 				segments[0] = nonZeroWidth  ? LineSegment.fromCoords(rect.minX, rect.minY, rect.maxX, rect.maxY) : LineSegment.fromCoords(rect.minX, rect.minY, Vector.UNIT_X);
 				segments[1] = nonZeroHeight ? LineSegment.fromCoords(rect.maxX, rect.minY, rect.maxX, rect.maxY) : LineSegment.fromCoords(rect.maxX, rect.minY, Vector.UNIT_Y);
@@ -92,7 +92,7 @@ public class RectPath implements Path {
 	}
 
 	@Override
-	public float getLength() {
+	public double getLength() {
 		return rect.getPerimeterLength();
 	}
 
@@ -127,8 +127,8 @@ public class RectPath implements Path {
 	public <C> C linearize(Point.Consumer<C> consumer) {
 		if (consumer == null) throw new IllegalArgumentException("null consumer");
 		C c = consumer.addPoint(start);
-		boolean nonZeroWidth = rect.getWidth() != 0f;
-		boolean nonZeroHeight = rect.getHeight() != 0f;
+		boolean nonZeroWidth = rect.getWidth() != 0.0;
+		boolean nonZeroHeight = rect.getHeight() != 0.0;
 		if (!nonZeroWidth & !nonZeroHeight) return c;
 		if (positiveRotation) {
 			if (nonZeroWidth)  c = consumer.addPoint(rect.maxX, rect.minY);
@@ -161,36 +161,36 @@ public class RectPath implements Path {
 		return new RectPath(rect, !positiveRotation);
 	}
 
-	private float lengthAtImpl(float p) {
-		if (p <= 0f) return 0f;
-		if (p >= 1f) return rect.getPerimeterLength();
+	private double lengthAtImpl(double p) {
+		if (p <= 0.0) return 0.0;
+		if (p >= 1.0) return rect.getPerimeterLength();
 		p *= 4;
 		int s = (int) p;
 		p -= s;
 		if (positiveRotation) {
-			switch (s) {
-			case 0 : return rect.getWidth() * p;
-			case 1 : return rect.getWidth() + rect.getHeight() * p;
-			case 2 : return rect.getWidth() * (p + 1) + rect.getHeight();
-			default: return rect.getWidth() * 2 + rect.getHeight() * (p + 1);
-			}
+            return switch (s) {
+                case 0 -> rect.getWidth() * p;
+                case 1 -> rect.getWidth() + rect.getHeight() * p;
+                case 2 -> rect.getWidth() * (p + 1) + rect.getHeight();
+                default -> rect.getWidth() * 2 + rect.getHeight() * (p + 1);
+            };
 		} else {
-			switch (s) {
-			case 0 : return rect.getHeight() * p;
-			case 1 : return rect.getHeight() + rect.getWidth() * p;
-			case 2 : return rect.getHeight() * (p + 1) + rect.getWidth();
-			default: return rect.getHeight() * 2 + rect.getWidth() * (p + 1);
-			}
+            return switch (s) {
+                case 0 -> rect.getHeight() * p;
+                case 1 -> rect.getHeight() + rect.getWidth() * p;
+                case 2 -> rect.getHeight() * (p + 1) + rect.getWidth();
+                default -> rect.getHeight() * 2 + rect.getWidth() * (p + 1);
+            };
 		}
 	}
 
-	private float intrinsicAtImpl(float p) {
-		if (p <= 0f) return 0f;
-		float prev = 0f;
-		float next = 0f;
-		float w = rect.getWidth();
-		float h = rect.getHeight();
-		float a, b;
+	private double intrinsicAtImpl(double p) {
+		if (p <= 0.0) return 0.0;
+		double prev = 0.0;
+		double next = 0.0;
+		double w = rect.getWidth();
+		double h = rect.getHeight();
+		double a, b;
 		if (positiveRotation) {
 			a = w; b = h;
 		} else {
@@ -198,18 +198,18 @@ public class RectPath implements Path {
 		}
 		{
 			next += a;
-			if (p < next) return          p         * 0.25f / a;
+			if (p < next) return         p         * 0.25 / a;
 			prev = next;
 			next += b;
-			if (p < next) return 0.25f + (p - prev) * 0.25f / b;
+			if (p < next) return 0.25 + (p - prev) * 0.25 / b;
 			prev = next;
 			next += a;
-			if (p < next) return 0.50f + (p - prev) * 0.25f / a;
+			if (p < next) return 0.50 + (p - prev) * 0.25 / a;
 			prev = next;
 			next += b;
-			if (p < next) return 0.75f + (p - prev) * 0.25f / b;
+			if (p < next) return 0.75 + (p - prev) * 0.25 / b;
 		}
-		return 1f;
+		return 1.0;
 	}
 
 	private class ByIntrinsic implements Parameterization.ByIntrinsic {
@@ -224,11 +224,11 @@ public class RectPath implements Path {
 
 		@Override
 		public Location location() {
-			return new Location(this, 0f);
+			return new Location(this, 0.0);
 		}
 
 		@Override
-		public Point pointAt(float p) {
+		public Point pointAt(double p) {
 			if (p <= 0) return start;
 			if (p >= 1) return start;
 			p *= 4;
@@ -238,16 +238,16 @@ public class RectPath implements Path {
 		}
 
 		@Override
-		public Vector tangentAt(float p) {
-			if (p <= 0f) return Vector.UNIT_X;
-			if (p >= 1f) return Vector.UNIT_NEG_Y;
+		public Vector tangentAt(double p) {
+			if (p <= 0.0) return Vector.UNIT_X;
+			if (p >= 1.0) return Vector.UNIT_NEG_Y;
 			return tangentAtImpl((int) (p * 4));
 		}
 
 		@Override
-		public PointPath pointTangentAt(float p) {
-			if (p <= 0f) p = 0f;
-			else if (p >= 1f) p = 1f;
+		public PointPath pointTangentAt(double p) {
+			if (p <= 0.0) p = 0.0;
+			else if (p >= 1.0) p = 1.0;
 			p *= 4;
 			int s = (int) p;
 			p -= s;
@@ -255,33 +255,33 @@ public class RectPath implements Path {
 		}
 
 		@Override
-		public SplitPath splitAt(float p) {
+		public SplitPath splitAt(double p) {
 			//TODO can we assume this p value is mapped equivalently?
 			return polygonal().byIntrinsic().splitAt(p);
 		}
 
 		@Override
-		public Path segment(float minP, float maxP) {
+		public Path segment(double minP, double maxP) {
 			//TODO can we assume this p value is mapped equivalently?
 			return polygonal().byIntrinsic().segment(minP, maxP);
 		}
 
 		@Override
-		public float parameterNearest(Point p) {
+		public double parameterNearest(Point p) {
 			Point pt = rect.nearestPointTo(p, true);
-			float w = rect.getWidth();
-			float h = rect.getHeight();
-			if (h == 0f && w == 0f)        return 0f;
+			double w = rect.getWidth();
+			double h = rect.getHeight();
+			if (h == 0.0 && w == 0.0)        return 0.0;
 			if (positiveRotation) {
-				if (pt.y == rect.minY)     return         (pt.x - rect.minX) / w * 0.25f;
-				if (pt.x == rect.maxX)     return 0.25f + (pt.y - rect.minY) / h * 0.25f;
-				if (pt.y == rect.maxY)     return 0.75f - (pt.x - rect.minX) / w * 0.25f;
-				/*if (pt.x == rect.minX)*/ return 1.00f - (pt.y - rect.minY) / h * 0.25f;
+				if (pt.y == rect.minY)     return        (pt.x - rect.minX) / w * 0.25;
+				if (pt.x == rect.maxX)     return 0.25 + (pt.y - rect.minY) / h * 0.25;
+				if (pt.y == rect.maxY)     return 0.75 - (pt.x - rect.minX) / w * 0.25;
+				/*if (pt.x == rect.minX)*/ return 1.00 - (pt.y - rect.minY) / h * 0.25;
 			} else {
-				if (pt.x == rect.minX)     return         (pt.y - rect.minY) / h * 0.25f;
-				if (pt.y == rect.maxY)     return 0.25f + (pt.x - rect.minX) / w * 0.25f;
-				if (pt.x == rect.maxX)     return 0.75f - (pt.y - rect.minY) / h * 0.25f;
-				/*if (pt.y == rect.minY)*/ return 1.00f - (pt.x - rect.minX) / w * 0.25f;
+				if (pt.x == rect.minX)     return        (pt.y - rect.minY) / h * 0.25;
+				if (pt.y == rect.maxY)     return 0.25 + (pt.x - rect.minX) / w * 0.25;
+				if (pt.x == rect.maxX)     return 0.75 - (pt.y - rect.minY) / h * 0.25;
+				/*if (pt.y == rect.minY)*/ return 1.00 - (pt.x - rect.minX) / w * 0.25;
 			}
 		}
 
@@ -291,17 +291,17 @@ public class RectPath implements Path {
 				Corner[] array;
 				if (positiveRotation) {
 					array = new Corner[] {
-							new Corner(this, 0.00f, new Point(rect.minX, rect.minY), Vector.UNIT_NEG_Y, Vector.UNIT_X    ),
-							new Corner(this, 0.25f, new Point(rect.maxX, rect.minY), Vector.UNIT_X,     Vector.UNIT_Y    ),
-							new Corner(this, 0.50f, new Point(rect.maxX, rect.maxY), Vector.UNIT_Y,     Vector.UNIT_NEG_X),
-							new Corner(this, 0.75f, new Point(rect.minX, rect.maxY), Vector.UNIT_NEG_X, Vector.UNIT_NEG_Y),
+							new Corner(this, 0.00, new Point(rect.minX, rect.minY), Vector.UNIT_NEG_Y, Vector.UNIT_X    ),
+							new Corner(this, 0.25, new Point(rect.maxX, rect.minY), Vector.UNIT_X,     Vector.UNIT_Y    ),
+							new Corner(this, 0.50, new Point(rect.maxX, rect.maxY), Vector.UNIT_Y,     Vector.UNIT_NEG_X),
+							new Corner(this, 0.75, new Point(rect.minX, rect.maxY), Vector.UNIT_NEG_X, Vector.UNIT_NEG_Y),
 					};
 				} else {
 					array = new Corner[] {
-							new Corner(this, 0.00f, new Point(rect.minX, rect.minY), Vector.UNIT_NEG_X, Vector.UNIT_Y    ),
-							new Corner(this, 0.25f, new Point(rect.minX, rect.maxY), Vector.UNIT_Y,     Vector.UNIT_X    ),
-							new Corner(this, 0.50f, new Point(rect.maxX, rect.maxY), Vector.UNIT_X,     Vector.UNIT_NEG_Y),
-							new Corner(this, 0.75f, new Point(rect.maxX, rect.minY), Vector.UNIT_NEG_Y, Vector.UNIT_NEG_X),
+							new Corner(this, 0.00, new Point(rect.minX, rect.minY), Vector.UNIT_NEG_X, Vector.UNIT_Y    ),
+							new Corner(this, 0.25, new Point(rect.minX, rect.maxY), Vector.UNIT_Y,     Vector.UNIT_X    ),
+							new Corner(this, 0.50, new Point(rect.maxX, rect.maxY), Vector.UNIT_X,     Vector.UNIT_NEG_Y),
+							new Corner(this, 0.75, new Point(rect.maxX, rect.minY), Vector.UNIT_NEG_Y, Vector.UNIT_NEG_X),
 					};
 				}
 				this.corners = Collections.unmodifiableList(Arrays.asList(array));
@@ -310,30 +310,30 @@ public class RectPath implements Path {
 		}
 
 		@Override
-		public float lengthAt(float p) {
+		public double lengthAt(double p) {
 			return lengthAtImpl(p);
 		}
 
 		private Vector tangentAtImpl(int s) {
 			if (positiveRotation) {
-				switch (s) {
-				case 0 : return Vector.UNIT_X;
-				case 1 : return Vector.UNIT_Y;
-				case 2 : return Vector.UNIT_NEG_X;
-				default: return Vector.UNIT_NEG_Y;
-				}
+                return switch (s) {
+                    case 0 -> Vector.UNIT_X;
+                    case 1 -> Vector.UNIT_Y;
+                    case 2 -> Vector.UNIT_NEG_X;
+                    default -> Vector.UNIT_NEG_Y;
+                };
 			} else {
-				switch (s) {
-				case 0 : return Vector.UNIT_Y;
-				case 1 : return Vector.UNIT_X;
-				case 2 : return Vector.UNIT_NEG_Y;
-				default: return Vector.UNIT_NEG_X;
-				}
+                return switch (s) {
+                    case 0 -> Vector.UNIT_Y;
+                    case 1 -> Vector.UNIT_X;
+                    case 2 -> Vector.UNIT_NEG_Y;
+                    default -> Vector.UNIT_NEG_X;
+                };
 			}
 		}
 
-		private Point pointAtImpl(int s, float p) {
-			float q;
+		private Point pointAtImpl(int s, double p) {
+			double q;
 			if (positiveRotation) {
 				q = 1 - p;
 			} else {
@@ -371,11 +371,11 @@ public class RectPath implements Path {
 		}
 
 		@Override
-		public float parameterNearest(Point p) {
+		public double parameterNearest(Point p) {
 			Point pt = rect.nearestPointTo(p, true);
-			float w = rect.getWidth();
-			float h = rect.getHeight();
-			if (h == 0f && w == 0f)        return 0f;
+			double w = rect.getWidth();
+			double h = rect.getHeight();
+			if (h == 0.0 && w == 0.0)        return 0.0;
 			if (positiveRotation) {
 				if (pt.y == rect.minY)     return                 (pt.x - rect.minX);
 				if (pt.x == rect.maxX)     return w             + (pt.y - rect.minY);
@@ -390,17 +390,17 @@ public class RectPath implements Path {
 		}
 
 		@Override
-		public float intrinsicAt(float p) {
+		public double intrinsicAt(double p) {
 			return intrinsicAtImpl(p);
 		}
 
 		@Override
-		protected float map(float p) {
+		protected double map(double p) {
 			return intrinsicAtImpl(p);
 		}
 
 		@Override
-		protected float unmap(float q) {
+		protected double unmap(double q) {
 			return lengthAtImpl(q);
 		}
 

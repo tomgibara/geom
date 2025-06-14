@@ -9,7 +9,7 @@ import com.tomgibara.geom.path.Path;
 
 public class GeomUtil {
 
-	private static final ThreadLocal<float[]> workingFloats = new ThreadLocal<>();
+	private static final ThreadLocal<double[]> workingFloats = new ThreadLocal<>();
 
 	public static List<Point> asList(Point... points) {
 		return Collections.unmodifiableList( Arrays.asList(points) );
@@ -24,21 +24,21 @@ public class GeomUtil {
 		return paths.toArray(new Path[paths.size()]);
 	}
 
-	public static float[] workingFloats(int length) {
+	public static double[] workingFloats(int length) {
 		if (length < 0) throw new IllegalArgumentException("negative length");
-		float[] fs = workingFloats.get();
+		double[] fs = workingFloats.get();
 		if (fs == null || fs.length < length) {
-			fs = new float[length];
+			fs = new double[length];
 			workingFloats.set(fs);
 		}
 		return fs;
 	}
 
-	public static void reversePointArray(float[] fs) {
+	public static void reversePointArray(double[] fs) {
 		int i = 0;
 		int j = fs.length - 1;
 		while (j > i) {
-			float t = fs[i];
+			double t = fs[i];
 			fs[i++] = fs[j];
 			fs[j--] = t;
 		}
@@ -54,7 +54,7 @@ public class GeomUtil {
 		}
 	}
 
-	public static Point[] asPoints(float... fs) {
+	public static Point[] asPoints(double... fs) {
 		if (fs == null) throw new IllegalArgumentException("null fs");
 		if ((fs.length & 1) != 0) throw new IllegalArgumentException("uneven length");
 		Point[] points = new Point[fs.length / 2];

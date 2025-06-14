@@ -22,7 +22,7 @@ public class CurvePath extends AbstractPath {
 
 	private final Curve z;
 	private Parameterization.ByLength byLength = null;
-	private float length = -1;
+	private double length = -1;
 	private Rect bounds = null;
 	private Boolean closed = null;
 
@@ -46,12 +46,12 @@ public class CurvePath extends AbstractPath {
 
 	@Override
 	public Point getStart() {
-		return z.pointAt(0f);
+		return z.pointAt(0.0);
 	}
 
 	@Override
 	public Point getFinish() {
-		return z.pointAt(1f);
+		return z.pointAt(1.0);
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class CurvePath extends AbstractPath {
 			consumer.addPoint(getStart());
 			return consumer.addPoint(getFinish());
 		}
-		float h = z.getDefaultSplitParam();
+		double h = z.getDefaultSplitParam();
 		SplitCurvePath curves = z.splitAt(h);
 		//TODO hacky
 		Path s1 = curves.getFirstPath().simplifyCurve();
@@ -93,7 +93,7 @@ public class CurvePath extends AbstractPath {
 			Point start = getStart();
 			Point finish = getFinish();
 			LineSegment segment = start.equals(finish) ?
-				LineSegment.fromPoint(start, z.tangentAt(0.5f)) :
+				LineSegment.fromPoint(start, z.tangentAt(0.5)) :
 				LineSegment.fromPoints(start, finish);
 			return new SimplifiedPath(segment.getPath());
 		}
@@ -104,8 +104,8 @@ public class CurvePath extends AbstractPath {
 	}
 
 	@Override
-	public float getLength() {
-		return length < 0 ? length = z.intrinsicToLength(1f) : length;
+	public double getLength() {
+		return length < 0 ? length = z.intrinsicToLength(1.0) : length;
 	}
 
 	@Override
@@ -206,24 +206,24 @@ public class CurvePath extends AbstractPath {
 		}
 
 		@Override
-		public float intrinsicAt(float s) {
+		public double intrinsicAt(double s) {
 			return z.lengthToIntrinsic(s);
 		}
 
 		@Override
-		public float parameterNearest(Point pt) {
+		public double parameterNearest(Point pt) {
 			return new Locator(z.getPath()).getNearestLengthAlongPath(pt);
 		}
 
 		@Override
-		protected float map(float s) {
+		protected double map(double s) {
 			return z.lengthToIntrinsic(s);
 		}
 
 		@Override
-		protected float unmap(float t) {
-			if (t <= 0f) return 0f;
-			if (t >= 1f) return z.getPath().getLength();
+		protected double unmap(double t) {
+			if (t <= 0.0) return 0.0;
+			if (t >= 1.0) return z.getPath().getLength();
 			return z.intrinsicToLength(t);
 		}
 

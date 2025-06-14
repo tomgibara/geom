@@ -22,7 +22,7 @@ public interface Path extends Geometric {
 
 	Point getFinish();
 
-	float getLength();
+	double getLength();
 
 	boolean isRectilinear();
 
@@ -53,17 +53,17 @@ public interface Path extends Geometric {
 
 	// inner classes
 
-	public final class Corner {
+	final class Corner {
 
 		public static final List<Corner> NO_CORNERS = Collections.emptyList();
 
 		private final Parameterization parameterization;
-		private final float parameter;
+		private final double parameter;
 		private final Point point;
 		private final Vector startTangent;
 		private final Vector finishTangent;
 
-		public Corner(Parameterization parameterization, float parameter, Point point, Vector startTangent, Vector finishTangent) {
+		public Corner(Parameterization parameterization, double parameter, Point point, Vector startTangent, Vector finishTangent) {
 			if (parameterization == null) throw new IllegalArgumentException("null parameterization");
 			if (point == null) throw new IllegalArgumentException("null point");
 			if (startTangent == null) throw new IllegalArgumentException("null startTangent");
@@ -80,7 +80,7 @@ public interface Path extends Geometric {
 			return parameterization;
 		}
 
-		public float getParameter() {
+		public double getParameter() {
 			return parameter;
 		}
 
@@ -96,21 +96,20 @@ public interface Path extends Geometric {
 			return finishTangent;
 		}
 
-		public Corner reparameterize(Parameterization parameterization, float parameter) {
+		public Corner reparameterize(Parameterization parameterization, double parameter) {
 			return new Corner(parameterization, parameter, point, startTangent, finishTangent);
 		}
 
 		@Override
 		public int hashCode() {
-			return parameterization.hashCode() ^ Float.floatToIntBits(parameter) ^ point.hashCode() ^ startTangent.hashCode() ^ finishTangent.hashCode();
+			return parameterization.hashCode() + Double.hashCode(parameter) + point.hashCode() + startTangent.hashCode() + finishTangent.hashCode();
 		}
 
 		@Override
 		public boolean equals(Object obj) {
 			if (obj == this) return true;
-			if (!(obj instanceof Corner)) return false;
-			Corner that = (Corner) obj;
-			if (this.parameter != that.parameter) return false;
+			if (!(obj instanceof Corner that)) return false;
+            if (this.parameter != that.parameter) return false;
 			if (!this.parameterization.equals(that.parameterization)) return false;
 			if (!this.point.equals(that.point)) return false;
 			if (!this.startTangent.equals(that.startTangent)) return false;
@@ -131,16 +130,16 @@ public interface Path extends Geometric {
 		private final boolean byLength;
 		private final boolean byIntrinsic;
 
-		private float parameter;
+		private double parameter;
 		private List<Corner> corners = null;
 
 		private Point point = null;
 		private Vector tangent = null;
 		private PointPath pointTangent = null;
-		private float otherParameter = Float.NaN;
+		private double otherParameter = Double.NaN;
 
 		//TODO would like a safe version of this so that clamp isn't needed (since it could be costly)
-		public Location(Parameterization parameterization, float parameter) {
+		public Location(Parameterization parameterization, double parameter) {
 			if (parameterization == null) throw new IllegalArgumentException("null parameterization");
 			byLength = parameterization instanceof Parameterization.ByLength;
 			byIntrinsic = parameterization instanceof  Parameterization.ByIntrinsic;
@@ -165,7 +164,7 @@ public interface Path extends Geometric {
 			return parameterization;
 		}
 
-		public float getParameter() {
+		public double getParameter() {
 			return parameter;
 		}
 
@@ -185,9 +184,9 @@ public interface Path extends Geometric {
 			List<Corner> corners = getCorners();
 			int count = corners.size();
 			if (count == 0) return false;
-			for (int i = 0; i < count; i++) {
-				if (corners.get(i).getParameter() == parameter) return true;
-			}
+            for (Corner corner : corners) {
+                if (corner.getParameter() == parameter) return true;
+            }
 			return false;
 		}
 
@@ -206,10 +205,9 @@ public interface Path extends Geometric {
 		public Corner getCorner() {
 			List<Corner> corners = getCorners();
 			int count = corners.size();
-			for (int i = 0; i < count; i++) {
-				Corner corner = corners.get(i);
-				if (corner.getParameter() == parameter) return corner;
-			}
+            for (Corner corner : corners) {
+                if (corner.getParameter() == parameter) return corner;
+            }
 			return null;
 		}
 
@@ -217,32 +215,32 @@ public interface Path extends Geometric {
 			return parameterization.splitAt(parameter);
 		}
 
-		public float getLength() {
+		public double getLength() {
 			if (byLength) return parameter;
-			if (Float.isNaN(otherParameter)) {
+			if (Double.isNaN(otherParameter)) {
 				otherParameter = ((Parameterization.ByIntrinsic) parameterization).lengthAt(parameter);
 			}
 			return otherParameter;
 		}
 
-		public float getIntrinsic() {
+		public double getIntrinsic() {
 			if (byIntrinsic) return parameter;
-			if (Float.isNaN(otherParameter)) {
+			if (Double.isNaN(otherParameter)) {
 				otherParameter = ((Parameterization.ByLength) parameterization).intrinsicAt(parameter);
 			}
 			return otherParameter;
 		}
 
 		public Location moveToStart() {
-			if (parameter != 0f) {
-				parameter = 0f;
+			if (parameter != 0.0) {
+				parameter = 0.0;
 				clear();
 			}
 			return this;
 		}
 
 		public Location moveToFinish() {
-			float max = getMaximum();
+			double max = getMaximum();
 			if (parameter != max) {
 				parameter = max;
 				clear();
@@ -250,7 +248,7 @@ public interface Path extends Geometric {
 			return this;
 		}
 
-		public Location moveTo(float parameter) {
+		public Location moveTo(double parameter) {
 			parameter = clamp(parameter);
 			if (parameter != this.parameter) {
 				this.parameter = parameter;
@@ -259,8 +257,8 @@ public interface Path extends Geometric {
 			return this;
 		}
 
-		public Location moveBy(float delta) {
-			float parameter = clamp(this.parameter + delta);
+		public Location moveBy(double delta) {
+			double parameter = clamp(this.parameter + delta);
 			if (parameter != this.parameter) {
 				this.parameter = parameter;
 				clear();
@@ -277,8 +275,8 @@ public interface Path extends Geometric {
 			if (location == null) throw new IllegalArgumentException("null location");
 			Parameterization z = location.getParameterization();
 			if (z.getPath() != parameterization.getPath()) throw new IllegalArgumentException("mismatched path");
-			float p = location.getParameter();
-			float q;
+			double p = location.getParameter();
+			double q;
 			if (byLength && location.byLength || byIntrinsic && location.byIntrinsic) {
 				q = p;
 			} else if (location.byIntrinsic) {
@@ -293,7 +291,7 @@ public interface Path extends Geometric {
 			List<Corner> corners = getCorners();
 			int count = corners.size();
 			for (int i = 0; i < count; i++) {
-				float p = corners.get(i).getParameter();
+				double p = corners.get(i).getParameter();
 				if (p > parameter) return moveTo(p);
 			}
 			return moveToFinish();
@@ -301,8 +299,8 @@ public interface Path extends Geometric {
 
 		public Location moveToPreviousCorner() {
 			List<Corner> corners = getCorners();
-			for (int i = corners.size() - 1; i >= 0; i++) {
-				float p = corners.get(i).getParameter();
+			for (int i = corners.size() - 1; i >= 0; i--) {
+				double p = corners.get(i).getParameter();
 				if (p < parameter) return moveTo(p);
 			}
 			return moveToStart();
@@ -314,15 +312,14 @@ public interface Path extends Geometric {
 
 		@Override
 		public int hashCode() {
-			return parameterization.hashCode() ^ Float.floatToIntBits(parameter);
+			return parameterization.hashCode() + Double.hashCode(parameter);
 		}
 
 		@Override
 		public boolean equals(Object obj) {
 			if (obj == this) return true;
-			if (!(obj instanceof Location)) return false;
-			Location that = (Location) obj;
-			if (this.parameter != that.parameter) return false;
+			if (!(obj instanceof Location that)) return false;
+            if (this.parameter != that.parameter) return false;
 			if (!this.parameterization.equals(that.parameterization)) return false;
 			return true;
 		}
@@ -336,16 +333,16 @@ public interface Path extends Geometric {
 			point = null;
 			tangent = null;
 			pointTangent = null;
-			otherParameter = Float.NaN;
+			otherParameter = Double.NaN;
 		}
 
-		private float getMaximum() {
-			return byIntrinsic ? 1f : parameterization.getPath().getLength();
+		private double getMaximum() {
+			return byIntrinsic ? 1.0 : parameterization.getPath().getLength();
 		}
 
-		private float clamp(float p) {
-			if (p <= 0f) return 0f; // avoid getting maximum length until necessary
-			float max = getMaximum();
+		private double clamp(double p) {
+			if (p <= 0.0) return 0.0; // avoid getting maximum length until necessary
+			double max = getMaximum();
 			return p >= max ? max : p;
 		}
 

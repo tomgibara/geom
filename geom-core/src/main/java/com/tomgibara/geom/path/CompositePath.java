@@ -13,6 +13,6 @@ public interface CompositePath extends Path {
 	List<? extends Path> getSubpaths();
 
 	//TODO necessary?
-	Path.Location locateAtLength(float p);
+	Path.Location locateAtLength(double p);
 
 }

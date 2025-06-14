@@ -6,7 +6,7 @@ import com.tomgibara.geom.core.Point;
 public class Measurer implements Point.Consumer<Measurer> {
 
 	private final Norm norm;
-	private float length = 0f;
+	private double length = 0.0;
 	private Point last = null;
 
 	public Measurer(Norm norm) {
@@ -18,12 +18,12 @@ public class Measurer implements Point.Consumer<Measurer> {
 		this.norm = Norm.L2;
 	}
 
-	public float getLength() {
+	public double getLength() {
 		return length;
 	}
 
 	@Override
-	public Measurer addPoint(float x, float y) {
+	public Measurer addPoint(double x, double y) {
 		return addPoint(new Point(x, y));
 	}
 

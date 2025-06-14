@@ -4,7 +4,7 @@ import com.tomgibara.geom.transform.Transform;
 
 public final class LineSegment implements Traceable, Linear {
 
-	private static int relPos(float f, float min, float max) {
+	private static int relPos(double f, double min, double max) {
 		if (f < min) return -1;
 		if (f > max) return 1;
 		return 0;
@@ -31,13 +31,13 @@ public final class LineSegment implements Traceable, Linear {
 		return new LineSegment(start, vector.translate(start), vector.isUnit() ? vector : null, null);
 	}
 
-	public static LineSegment fromCoords(float x1, float y1, float x2, float y2) {
+	public static LineSegment fromCoords(double x1, double y1, double x2, double y2) {
 		if (x1 == x2 && y1 == y2) throw new IllegalArgumentException("coincident coords");
 		return new LineSegment(new Point(x1, y1), new Point(x2, y2), null, null);
 	}
 
 	//TODO find a better name
-	public static LineSegment fromCoords(float x, float y, Vector tangent) {
+	public static LineSegment fromCoords(double x, double y, Vector tangent) {
 		Point startAndFinish = new Point(x, y);
 		if (tangent == null) throw new IllegalArgumentException("null tangent");
 		if (tangent.isZero()) throw new IllegalArgumentException("zero tangent");
@@ -47,8 +47,8 @@ public final class LineSegment implements Traceable, Linear {
 
 	private final Point start;
 	private final Point finish;
+	private Vector tangent;
 	private Line line = null;
-	private Vector tangent = null;
 	private Rect bounds = null;
 	private LinearPath path = null;
 
@@ -87,9 +87,9 @@ public final class LineSegment implements Traceable, Linear {
 	}
 
 	// ranges from 0 to 1, clamped to that range
-	public Point getInterpolation(float t) {
-		if (t <= 0f) return start;
-		if (t >= 1f) return finish;
+	public Point getInterpolation(double t) {
+		if (t <= 0.0) return start;
+		if (t >= 1.0) return finish;
 		return Point.Util.interpolate(start, finish, t);
 	}
 
@@ -136,18 +136,18 @@ public final class LineSegment implements Traceable, Linear {
 
 	public Point intersectionWith(LineSegment that) {
 		if (that == null) throw new IllegalArgumentException("null that");
-		float dax = this.finish.x - this.start.x;
-		float day = this.finish.y - this.start.y;
-		float dbx = that.finish.x - that.start.x;
-		float dby = that.finish.y - that.start.y;
-		float d = day * dbx - dax * dby;
-		if (d == 0f) return null;
-		float ex = that.start.x - this.start.x;
-		float ey = that.start.y - this.start.y;
-		float s = ey * dbx - ex * dby;
+		double dax = this.finish.x - this.start.x;
+		double day = this.finish.y - this.start.y;
+		double dbx = that.finish.x - that.start.x;
+		double dby = that.finish.y - that.start.y;
+		double d = day * dbx - dax * dby;
+		if (d == 0.0) return null;
+		double ex = that.start.x - this.start.x;
+		double ey = that.start.y - this.start.y;
+		double s = ey * dbx - ex * dby;
 		if (d > 0 && (s < 0 || s > d)) return null;
 		if (d < 0 && (s > 0 || s < d)) return null;
-		float t = ey * dax - ex * day;
+		double t = ey * dax - ex * day;
 		if (d > 0 && (t < 0 || t > d)) return null;
 		if (d < 0 && (t > 0 || t < d)) return null;
 		s /= d;
@@ -158,11 +158,11 @@ public final class LineSegment implements Traceable, Linear {
 		return new LineSegment(finish, start, tangent == null ? null : tangent.negated(), line);
 	}
 
-	public LineSegment scaleLength(float scale) {
+	public LineSegment scaleLength(double scale) {
 		if (isZeroLength()) return this;
-		if (scale == 1f) return this;
-		if (scale == 0f) return new LineSegment(start, start, tangent, line);
-		if (scale == -1f) return new LineSegment(start, start.vectorFrom(finish).translate(start), tangent == null ? null : tangent.negated(), line);
+		if (scale == 1.0) return this;
+		if (scale == 0.0) return new LineSegment(start, start, tangent, line);
+		if (scale == -1.0) return new LineSegment(start, start.vectorFrom(finish).translate(start), tangent == null ? null : tangent.negated(), line);
 		return new LineSegment(start, new Point(start.x + (finish.x - start.x) * scale, start.y + (finish.y - start.y) * scale), tangent == null ? null : (scale < 0 ? tangent.negated() : tangent), line);
 	}
 
@@ -206,7 +206,7 @@ public final class LineSegment implements Traceable, Linear {
 		// rely on line bounding
 		LineSegment extended = getLine().bounded(rect);
 		if (extended == null) return null;
-		if (extended.getVector().dot(getTangent()) < 0f) extended = extended.getReverse();
+		if (extended.getVector().dot(getTangent()) < 0.0) extended = extended.getReverse();
 		if (rect.containsPoint(start)) return new LineSegment(start, extended.finish, tangent, line);
 		if (rect.containsPoint(finish)) return new LineSegment(extended.start, finish, tangent, line);
 		return extended;
@@ -214,7 +214,7 @@ public final class LineSegment implements Traceable, Linear {
 
 	@Override
 	public Point nearestPointTo(Point pt) {
-		float t = LinearPath.nearestParamIntrinsic(start, finish, pt);
+		double t = LinearPath.nearestParamIntrinsic(start, finish, pt);
 		return getInterpolation(t);
 	}
 
@@ -224,9 +224,9 @@ public final class LineSegment implements Traceable, Linear {
 	}
 
 	@Override
-	public int sideOf(float x, float y) {
+	public int sideOf(double x, double y) {
 		Point finish = isZeroLength() ? tangent.translate(start) : this.finish;
-		float det = (finish.x - start.x) * (y - start.y) - (finish.y - start.y) * (x - start.x);
+		double det = (finish.x - start.x) * (y - start.y) - (finish.y - start.y) * (x - start.x);
 		if (det == 0) return 0;
 		return det < 0 ? -1 : 1;
 	}
@@ -241,9 +241,8 @@ public final class LineSegment implements Traceable, Linear {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof LineSegment)) return false;
-		LineSegment that = (LineSegment) obj;
-		if (!this.start.equals(that.start)) return false;
+		if (!(obj instanceof LineSegment that)) return false;
+        if (!this.start.equals(that.start)) return false;
 		if (!this.finish.equals(that.finish)) return false;
 		return true;
 	}

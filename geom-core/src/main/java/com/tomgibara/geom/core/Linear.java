@@ -14,5 +14,5 @@ public interface Linear {
 
 	int sideOf(Point point);
 
-	int sideOf(float x, float y);
+	int sideOf(double x, double y);
 }

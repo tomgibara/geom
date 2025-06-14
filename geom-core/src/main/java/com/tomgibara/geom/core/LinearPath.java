@@ -1,6 +1,5 @@
 package com.tomgibara.geom.core;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.tomgibara.geom.path.Parameterization;
@@ -16,39 +15,39 @@ import com.tomgibara.geom.transform.Transform;
 
 public final class LinearPath implements Path, Linear {
 
-	static float nearestParamIntrinsic(Point start, Point finish, Point pt) {
-		float dx = finish.x - start.x;
-		float dy = finish.y - start.y;
-		float magSqr = dx * dx + dy * dy;
-		if (magSqr == 0) return 0f;
-		float x = pt.x - start.x;
-		float y = pt.y - start.y;
-		float p = x * dx + y * dy;
-		if (p <= 0) return 0f;
-		if (p >= magSqr) return 1f;
+	static double nearestParamIntrinsic(Point start, Point finish, Point pt) {
+		double dx = finish.x - start.x;
+		double dy = finish.y - start.y;
+		double magSqr = dx * dx + dy * dy;
+		if (magSqr == 0) return 0.0;
+		double x = pt.x - start.x;
+		double y = pt.y - start.y;
+		double p = x * dx + y * dy;
+		if (p <= 0) return 0.0;
+		if (p >= magSqr) return 1.0;
 		return p / magSqr;
 	}
 
-	static float nearestParamLength(Point start, Point finish, Point pt, float length) {
-		if (length == 0f) return 0f;
-		float dx = finish.x - start.x;
-		float dy = finish.y - start.y;
-		float x = pt.x - start.x;
-		float y = pt.y - start.y;
-		float p = x * dx + y * dy;
-		if (p <= 0) return 0f;
-		if (p >= length*length) return 1f;
+	static double nearestParamLength(Point start, Point finish, Point pt, double length) {
+		if (length == 0.0) return 0.0;
+		double dx = finish.x - start.x;
+		double dy = finish.y - start.y;
+		double x = pt.x - start.x;
+		double y = pt.y - start.y;
+		double p = x * dx + y * dy;
+		if (p <= 0) return 0.0;
+		if (p >= length*length) return 1.0;
 		return p / length;
 	}
 
 	private final LineSegment segment;
-	private float length = -1;
+	private double length = -1;
 	private ByIntrinsic byIntrinsic;
 	private ByLength byLength;
 
 	LinearPath(LineSegment segment) {
 		this.segment = segment;
-		if (segment.isZeroLength()) length = 0f;
+		if (segment.isZeroLength()) length = 0.0;
 	}
 
 	public LineSegment getSegment() {
@@ -81,7 +80,7 @@ public final class LinearPath implements Path, Linear {
 	}
 
 	@Override
-	public int sideOf(float x, float y) {
+	public int sideOf(double x, double y) {
 		return segment.sideOf(x, y);
 	}
 
@@ -122,7 +121,7 @@ public final class LinearPath implements Path, Linear {
 	}
 
 	@Override
-	public float getLength() {
+	public double getLength() {
 		return length < 0 ? length = Norm.L2.lengthOf(this) : length;
 	}
 
@@ -176,9 +175,8 @@ public final class LinearPath implements Path, Linear {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof LinearPath)) return false;
-		LinearPath that = (LinearPath) obj;
-		return this.segment.equals(that.segment);
+		if (!(obj instanceof LinearPath that)) return false;
+        return this.segment.equals(that.segment);
 	}
 
 	@Override
@@ -197,24 +195,24 @@ public final class LinearPath implements Path, Linear {
 		}
 
 		@Override
-		public Point pointAt(float p) {
+		public Point pointAt(double p) {
 			if (p <= 0) return start;
 			if (p >= 1) return finish;
 			return Point.Util.interpolate(start, finish, p);
 		}
 
 		@Override
-		public Vector tangentAt(float p) {
+		public Vector tangentAt(double p) {
 			return getTangent();
 		}
 
 		@Override
-		public PointPath pointTangentAt(float p) {
+		public PointPath pointTangentAt(double p) {
 			return PointPath.from(pointAt(p), segment.getTangent());
 		}
 
 		@Override
-		public SplitPath splitAt(float p) {
+		public SplitPath splitAt(double p) {
 			Point point = pointAt(p);
 			LinearPath first;
 			LinearPath second;
@@ -237,21 +235,21 @@ public final class LinearPath implements Path, Linear {
 		}
 
 		@Override
-		public LinearPath segment(float minP, float maxP) {
+		public LinearPath segment(double minP, double maxP) {
 			Point minPt = Point.Util.interpolate(start, finish, minP);
 			Point maxPt = Point.Util.interpolate(start, finish, maxP);
 			return segment.subsegment(minPt, maxPt).getPath();
 		}
 
 		@Override
-		public float lengthAt(float p) {
-			if (p <= 0f) return 0f;
-			if (p >= 1f) return getLength();
+		public double lengthAt(double p) {
+			if (p <= 0.0) return 0.0;
+			if (p >= 1.0) return getLength();
 			return getLength() * p;
 		}
 
 		@Override
-		public float parameterNearest(Point pt) {
+		public double parameterNearest(Point pt) {
 			return nearestParamIntrinsic(start, finish, pt);
 		}
 
@@ -269,7 +267,7 @@ public final class LinearPath implements Path, Linear {
 
 	private class ByLength extends Reparameterization.ByLength {
 
-		private final float length = getLength();
+		private final double length = getLength();
 
 		public ByLength() {
 			super(byIntrinsic());
@@ -281,22 +279,22 @@ public final class LinearPath implements Path, Linear {
 		}
 
 		@Override
-		public float parameterNearest(Point pt) {
+		public double parameterNearest(Point pt) {
 			return nearestParamLength(getStart(), getFinish(), pt, length);
 		}
 
 		@Override
-		public float intrinsicAt(float p) {
+		public double intrinsicAt(double p) {
 			return p / length;
 		}
 
 		@Override
-		protected float map(float p) {
+		protected double map(double p) {
 			return p / length;
 		}
 
 		@Override
-		protected float unmap(float q) {
+		protected double unmap(double q) {
 			return q * length;
 		}
 

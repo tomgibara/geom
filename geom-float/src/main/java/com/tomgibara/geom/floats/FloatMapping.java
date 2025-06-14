@@ -18,13 +18,13 @@ public interface FloatMapping {
 			return new Identity(domain);
 		}
 
-		public static FloatMapping constant(FloatRange domain, float c) {
+		public static FloatMapping constant(FloatRange domain, double c) {
 			checkRange(domain);
 			if (domain.isZeroSize() && domain.containsValue(c)) return new Identity(domain);
 			return new Constant(domain, c);
 		}
 
-		public static FloatMapping linear(FloatRange domain, float y1, float y2) {
+		public static FloatMapping linear(FloatRange domain, double y1, double y2) {
 			checkRange(domain);
 			if (y1 == domain.min && y2 == domain.max) return new Identity(domain);
 			if (y1 == y2) return new Constant(domain, y1);
@@ -91,7 +91,7 @@ public interface FloatMapping {
 			}
 
 			@Override
-			public float map(float x) {
+			public double map(double x) {
 				return x;
 			}
 
@@ -121,7 +121,7 @@ public interface FloatMapping {
 			private final FloatRange domain;
 			private final FloatRange range;
 
-			Constant(FloatRange domain, float c) {
+			Constant(FloatRange domain, double c) {
 				this(domain, new FloatRange(c,c));
 			}
 
@@ -141,7 +141,7 @@ public interface FloatMapping {
 			}
 
 			@Override
-			public float map(float x) {
+			public double map(double x) {
 				return range.min;
 			}
 
@@ -174,11 +174,11 @@ public interface FloatMapping {
 		private static class Linear implements FloatMapping {
 
 			private final FloatRange domain;
-			private final float y1;
-			private final float y2;
+			private final double y1;
+			private final double y2;
 			private FloatRange range = null;
 
-			Linear(FloatRange domain, float y1, float y2) {
+			Linear(FloatRange domain, double y1, double y2) {
 				this.domain = domain;
 				this.y1 = y1;
 				this.y2 = y2;
@@ -202,15 +202,15 @@ public interface FloatMapping {
 			}
 
 			@Override
-			public float map(float x) {
+			public double map(double x) {
 				x = domain.clampValue(x);
 				return (y1 * (domain.max - x) + y2 * (x - domain.min)) / domain.getSize();
 			}
 
 			@Override
 			public FloatMapping inverse() {
-				float x1;
-				float x2;
+				double x1;
+				double x2;
 				if (y1 < y2) {
 					x1 = domain.min;
 					x2 = domain.max;
@@ -264,7 +264,7 @@ public interface FloatMapping {
 			}
 
 			@Override
-			public float map(float x) {
+			public double map(double x) {
 				return map2.map(map1.map(x));
 			}
 
@@ -298,7 +298,7 @@ public interface FloatMapping {
 
 	FloatRange getRange();
 
-	float map(float x);
+	double map(double x);
 
 	FloatMapping inverse();
 

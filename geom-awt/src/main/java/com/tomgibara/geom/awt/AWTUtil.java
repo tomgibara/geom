@@ -4,6 +4,7 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -31,8 +32,8 @@ import com.tomgibara.geom.transform.Transform;
 
 public class AWTUtil {
 
-	private static final Rectangle2D.Float basisSquare = new Rectangle2D.Float(-1f, -1f, 2f, 2f);
-	private static final Ellipse2D.Float basisCircle = new Ellipse2D.Float(-1f, -1f, 2f, 2f);
+	private static final Rectangle2D.Double basisSquare = new Rectangle2D.Double(-1.0, -1.0, 2.0, 2.0);
+	private static final Ellipse2D.Double basisCircle = new Ellipse2D.Double(-1.0, -1.0, 2.0, 2.0);
 
 	public static AffineTransform toAffineTransform(Transform transform) {
 		if (transform == null) throw new IllegalArgumentException("null transform");
@@ -42,31 +43,27 @@ public class AWTUtil {
 	public static Transform fromAffineTransform(AffineTransform transform) {
 		if (transform == null) throw new IllegalArgumentException("null transform");
 		return Transform.components(
-				(float) transform.getScaleX(),
-				(float) transform.getShearY(),
-				(float) transform.getShearX(),
-				(float) transform.getScaleY(),
-				(float) transform.getTranslateX(),
-				(float) transform.getTranslateY()
+				transform.getScaleX(),
+				transform.getShearY(),
+				transform.getShearX(),
+				transform.getScaleY(),
+				transform.getTranslateX(),
+				transform.getTranslateY()
 				);
 	}
 
 	public static Point2D toPoint(Point point) {
 		if (point == null) throw new IllegalArgumentException("null point");
-		return new Point2D.Float(point.x, point.y);
+		return new Point2D.Double(point.x, point.y);
 	}
 
 	public static Point fromPoint(Point2D point) {
-		if (point instanceof Point2D.Float) {
-			Point2D.Float f = (Point2D.Float) point;
-			return new Point(f.x, f.y);
-		}
-		return new Point((float) point.getX(), (float) point.getY());
+		return new Point(point.getX(), point.getY());
 	}
 
 	public static Rectangle2D toRectangle(Rect rect) {
 		if (rect == null) throw new IllegalArgumentException("null rect");
-		return new Rectangle2D.Float(rect.minX, rect.minY, rect.maxX - rect.minX, rect.maxY - rect.minY);
+		return new Rectangle2D.Double(rect.minX, rect.minY, rect.maxX - rect.minX, rect.maxY - rect.minY);
 	}
 
 	public static Rect fromRectangle(Rectangle r) {
@@ -81,12 +78,22 @@ public class AWTUtil {
 
 	public static Rect fromRectangle(Rectangle2D r) {
 		if (r == null) throw new IllegalArgumentException("null r");
-		if (r instanceof Rectangle2D.Float) {
-			Rectangle2D.Float f = (Rectangle2D.Float) r;
-			return Rect.atPoints(f.x, f.y, f.x + f.width, f.y + f.height);
-		} else {
-			return Rect.atPoints((float) r.getMinY(), (float) r.getMinY(), (float) r.getMaxX(), (float) r.getMaxY());
-		}
+		return Rect.atPoints(r.getMinY(), r.getMinY(), r.getMaxX(), r.getMaxY());
+	}
+
+	public static Line2D.Double toLine(LineSegment lineSegment) {
+		if (lineSegment == null) throw new IllegalArgumentException("null lineSegment");
+		var start = lineSegment.getStart();
+		var finish = lineSegment.getFinish();
+		return new Line2D.Double(start.x, start.y, finish.x, finish.y);
+
+	}
+
+	public static LineSegment fromLine(Line2D line) {
+		if (line == null) throw new IllegalArgumentException("null line");
+		var start = fromPoint(line.getP1());
+		var finish = fromPoint(line.getP2());
+		return LineSegment.fromPoints(start, finish);
 	}
 
 	public static java.awt.Shape toEllipse(Ellipse ellipse) {
@@ -94,7 +101,7 @@ public class AWTUtil {
 		if (t.isRectilinearPreserving()) {
 			// simple case - a direct match to awt ellipse
 			Rect r = t.transform(Rect.BASIS_SQUARE);
-			return new Ellipse2D.Float(r.minX, r.minY, r.getWidth(), r.getHeight());
+			return new Ellipse2D.Double(r.minX, r.minY, r.getWidth(), r.getHeight());
 		}
 		return toAffineTransform(t).createTransformedShape(basisCircle);
 	}
@@ -103,22 +110,22 @@ public class AWTUtil {
 		return Ellipse.fromRect(fromRectangle(ellipse.getBounds2D()));
 	}
 
-	public static Path2D.Float toPath2D(Path path) {
-		Path2D.Float p = new Path2D.Float();
+	public static Path2D.Double toPath2D(Path path) {
+		Path2D.Double p = new Path2D.Double();
 		toPath2D(p, path);
 		return p;
 	}
 
-	public static Path2D.Float toPath2D(Path... paths) {
-		Path2D.Float p = new Path2D.Float();
+	public static Path2D.Double toPath2D(Path... paths) {
+		Path2D.Double p = new Path2D.Double();
 		for (Path path : paths) {
 			toPath2D(p, path);
 		}
 		return p;
 	}
 
-	public static Path2D.Float toPath2D(List<Path> paths) {
-		Path2D.Float p = new Path2D.Float();
+	public static Path2D.Double toPath2D(List<? extends Path> paths) {
+		Path2D.Double p = new Path2D.Double();
 		for (Path path : paths) {
 			toPath2D(p, path);
 		}
@@ -129,7 +136,7 @@ public class AWTUtil {
 		List<Path> paths = new ArrayList<>();
 		PathIterator pi = p.getPathIterator(null);
 		Builder builder = SequencePath.builder();
-		float[] coords = new float[6];
+		double[] coords = new double[6];
 		while(!pi.isDone()) {
 			int type = pi.currentSegment(coords);
 			switch (type) {
@@ -169,37 +176,32 @@ public class AWTUtil {
 	}
 
 	public static int toWindingRule(WindingRule rule) {
-		switch (rule) {
-		case EVEN_ODD : return Path2D.WIND_EVEN_ODD;
-		case NON_ZERO : return Path2D.WIND_EVEN_ODD;
-		default:
-			throw new IllegalArgumentException("unsupported winding rule: " + rule);
-		}
+        return switch (rule) {
+            case EVEN_ODD -> Path2D.WIND_EVEN_ODD;
+            case NON_ZERO -> Path2D.WIND_NON_ZERO;
+        };
 	}
 
 	public static WindingRule fromWindingRule(int rule) {
-		switch (rule) {
-		case Path2D.WIND_EVEN_ODD : return WindingRule.EVEN_ODD;
-		case Path2D.WIND_NON_ZERO : return WindingRule.NON_ZERO;
-		default:
-			throw new IllegalArgumentException("unsupported winding rule: " + rule);
-		}
+        return switch (rule) {
+            case Path2D.WIND_EVEN_ODD -> WindingRule.EVEN_ODD;
+            case Path2D.WIND_NON_ZERO -> WindingRule.NON_ZERO;
+            default -> throw new IllegalArgumentException("unsupported winding rule: " + rule);
+        };
 	}
 
 	public static java.awt.Shape toShape2D(Shape shape) {
 		List<Contour> contours = shape.getContours();
 		if (contours.size() == 1) { // we may be able to handle this as a special case
 			Contour contour = contours.get(0);
-			if (contour instanceof RectContour) {
-				RectContour rc = (RectContour) contour;
-				return toRectangle(rc.getBounds());
+			if (contour instanceof RectContour rc) {
+                return toRectangle(rc.getBounds());
 			}
-			if (contour instanceof EllipseContour) {
-				EllipseContour ec = (EllipseContour) contour;
-				return toEllipse(ec.getGeometry());
+			if (contour instanceof EllipseContour ec) {
+                return toEllipse(ec.getGeometry());
 			}
 		}
-		Path2D.Float p = new Path2D.Float();
+		Path2D.Double p = new Path2D.Double();
 		for (Contour contour : contours) {
 			toPath2D(p, contour.getPath());
 		}
@@ -207,47 +209,47 @@ public class AWTUtil {
 		return p;
 	}
 
-	private static void toPath2D(final Path2D.Float p, Path path) {
+	private static void toPath2D(final Path2D.Double p, Path path) {
 		Point start = path.getStart();
 		p.moveTo(start.x, start.y);
 		Traceable g = path.getGeometry();
 		boolean processed = false;
-		if (g instanceof LineSegment) {
-			LineSegment segment = (LineSegment) g;
-			Point finish = segment.getFinish();
+		if (g instanceof LineSegment segment) {
+            Point finish = segment.getFinish();
 			p.lineTo(finish.x, finish.y);
 			processed = true;
-		} else if (g instanceof BezierCurve) {
-			BezierCurve b = (BezierCurve) g;
-			switch (b.getOrder()) {
-			case 0: { // point - ignored
-				processed = true;
+		} else if (g instanceof BezierCurve b) {
+            switch (b.getOrder()) {
+				case 0: { // point - ignored
+					processed = true;
+					break;
+				}
+				case 1: { // linear
+					Point finish = b.getPath().getFinish();
+					p.lineTo(finish.x, finish.y);
+					processed = true;
+					break;
+				}
+				case 2: { // quadratic
+					List<Point> pts = b.getPoints();
+					Point pt1 = pts.get(1);
+					Point pt2 = pts.get(2);
+					p.quadTo(pt1.x, pt1.y, pt2.x, pt2.y);
+					processed = true;
+					break;
+				}
+				case 3: { // cubic
+					List<Point> pts = b.getPoints();
+					Point pt1 = pts.get(1);
+					Point pt2 = pts.get(2);
+					Point pt3 = pts.get(3);
+					p.curveTo(pt1.x, pt1.y, pt2.x, pt2.y, pt3.x, pt3.y);
+					processed = true;
+					break;
+				}
 			}
-			case 1: { // linear
-				Point finish = b.getPath().getFinish();
-				p.lineTo(finish.x, finish.y);
-				processed = true;
-			}
-			case 2: { // quadratic
-				List<Point> pts = b.getPoints();
-				Point pt1 = pts.get(1);
-				Point pt2 = pts.get(2);
-				p.quadTo(pt1.x, pt1.y, pt2.x, pt2.y);
-				processed = true;
-				break;
-			}
-			case 3: { // cubic
-				List<Point> pts = b.getPoints();
-				Point pt1 = pts.get(1);
-				Point pt2 = pts.get(2);
-				Point pt3 = pts.get(3);
-				p.curveTo(pt1.x, pt1.y, pt2.x, pt2.y, pt3.x, pt3.y);
-				processed = true;
-			}
-			}
-		} else if (g instanceof EllipticalArc) {
-			EllipticalArc ea = (EllipticalArc) g;
-			Transform t = ea.getGeom().getTransform();
+		} else if (g instanceof EllipticalArc ea) {
+            Transform t = ea.getGeom().getTransform();
 			AffineTransform xform = toAffineTransform(t);
 			Arc2D.Float arc = new Arc2D.Float(basisSquare, 0, 360, Arc2D.OPEN);
 			CurvePath cp = ea.getPath();
@@ -262,7 +264,7 @@ public class AWTUtil {
 			g.getPath().linearize(new Point.Consumer<Void>() {
 				private boolean first = true;
 				@Override
-				public Void addPoint(float x, float y) {
+				public Void addPoint(double x, double y) {
 					if (first) {
 						first = false;
 					} else {

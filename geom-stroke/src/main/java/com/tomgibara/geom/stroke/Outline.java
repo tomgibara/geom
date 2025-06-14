@@ -2,7 +2,6 @@ package com.tomgibara.geom.stroke;
 
 import java.util.List;
 
-import com.tomgibara.geom.core.LineSegment;
 import com.tomgibara.geom.core.Point;
 import com.tomgibara.geom.curve.Ellipse;
 import com.tomgibara.geom.curve.OffsetCurve;
@@ -16,7 +15,7 @@ import com.tomgibara.geom.path.SequencePath.Builder.Policy;
 
 public class Outline {
 
-	private static FloatMapping submapping(float from, float to, FloatMapping mapping) {
+	private static FloatMapping submapping(double from, double to, FloatMapping mapping) {
 		FloatMapping remapping = FloatMapping.Util.linear(new FloatRange(0, to - from), new FloatRange(from, to));
 		return FloatMapping.Util.compose(remapping, mapping);
 	}
@@ -32,16 +31,16 @@ public class Outline {
 		this.width = width;
 	}
 
-	public Outline(Join join, float width) {
+	public Outline(Join join, double width) {
 		if (join == null) throw new IllegalArgumentException("null join");
-		if (width <= 0f) throw new IllegalArgumentException("non-positive width");
+		if (width <= 0.0) throw new IllegalArgumentException("non-positive width");
 
 		this.join = join;
 		this.width = FloatMapping.Util.constant(FloatRange.UNIT_CLOSED, width);
 	}
 
-	public float fixedWidth() {
-		return width.isConstant() ? width.getRange().min : -1f;
+	public double fixedWidth() {
+		return width.isConstant() ? width.getRange().min : -1.0;
 	}
 
 	public Outline getReverse() {
@@ -54,7 +53,7 @@ public class Outline {
 	public Path outline(Path path, FloatRange range) {
 		if (path == null) throw new IllegalArgumentException("null path");
 		if (range == null) throw new IllegalArgumentException("null range");
-		FloatRange whole = new FloatRange(0f, path.getLength());
+		FloatRange whole = new FloatRange(0.0, path.getLength());
 		range = whole.intersectionAsRange(range);
 		if (range == null) throw new IllegalStateException("range does not intersect path extent");
 
@@ -63,7 +62,7 @@ public class Outline {
 		// first map width function to length of path
 		FloatMapping remapping1 = FloatMapping.Util.linear(whole, width.getDomain());
 		// then pick out a segment of it
-		FloatMapping remapping2 = FloatMapping.Util.linear(new FloatRange(0f, range.getSize()), range);
+		FloatMapping remapping2 = FloatMapping.Util.linear(new FloatRange(0.0, range.getSize()), range);
 		FloatMapping mapping;
 		//TODO how do we handle small errors here?
 		mapping = FloatMapping.Util.compose(remapping1, width);
@@ -85,19 +84,19 @@ public class Outline {
 
 	public Path outline(Path path) {
 		if (path == null) throw new IllegalArgumentException("null path");
-		if (path.getLength() == 0f) {
+		if (path.getLength() == 0.0) {
 			PointPath ptPth;
 			if (path instanceof PointPath) {
 				ptPth = (PointPath) path;
 			} else {
-				ptPth = path.byIntrinsic().pointTangentAt(0f);
+				ptPth = path.byIntrinsic().pointTangentAt(0.0);
 			}
 			return outlineImpl(ptPth);
 		}
 
 		// remap the width to the path length
-		float length = path.getLength();
-		FloatMapping remapping = FloatMapping.Util.linear(new FloatRange(0f, length), width.getDomain());
+		double length = path.getLength();
+		FloatMapping remapping = FloatMapping.Util.linear(new FloatRange(0.0, length), width.getDomain());
 		FloatMapping mapping = FloatMapping.Util.compose(remapping, width);
 
 		return outlineImpl(path, mapping);
@@ -128,7 +127,7 @@ public class Outline {
 			//TODO check if end width matches start width
 			throw new UnsupportedOperationException("TODO: closed path " + path.getClass());
 		} else {
-			float startP = domain.min;
+			double startP = domain.min;
 			int subpathCount = subpaths.size();
 			Path previous = null;
 			Point previousCenter = null;
@@ -137,7 +136,7 @@ public class Outline {
 			}
 			for (int i = 0; i < cornerCount; i++) {
 				Path.Corner corner = corners.get(i);
-				float finishP = corner.getParameter();
+				double finishP = corner.getParameter();
 				Path subpath = subpaths.get(i);
 				Path next = OffsetCurve.from(subpath, submapping(startP, finishP, mapping)).getPath();
 				if (previous != null) builder.addPath(joint(previous, next, previousCenter));
@@ -155,8 +154,8 @@ public class Outline {
 
 	private Path joint(Path previous, Path next, Point center) {
 		//TODO add method to get terminal tangent & points to path?
-		PointPath a = previous.byIntrinsic().pointTangentAt(1f);
-		PointPath b = next.byIntrinsic().pointTangentAt(0f);
+		PointPath a = previous.byIntrinsic().pointTangentAt(1.0);
+		PointPath b = next.byIntrinsic().pointTangentAt(0.0);
 		return join.join(a, b, center);
 	}
 

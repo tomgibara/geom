@@ -1,6 +1,5 @@
 package com.tomgibara.geom.path;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.tomgibara.geom.core.Line;
@@ -67,9 +66,9 @@ public class PointPath implements Path, Linear {
 	}
 
 	@Override
-	public int sideOf(float x, float y) {
+	public int sideOf(double x, double y) {
 		Point finish = tangent.translate(point);
-		float det = (finish.x - point.x) * (y - point.y) - (finish.y - point.y) * (x - point.x);
+		double det = (finish.x - point.x) * (y - point.y) - (finish.y - point.y) * (x - point.x);
 		if (det == 0) return 0;
 		return det < 0 ? -1 : 1;
 	}
@@ -105,7 +104,7 @@ public class PointPath implements Path, Linear {
 	}
 
 	@Override
-	public float getLength() {
+	public double getLength() {
 		return 0;
 	}
 
@@ -168,43 +167,43 @@ public class PointPath implements Path, Linear {
 		//TODO consider abstract base class
 		@Override
 		public Path.Location location() {
-			return new Path.Location(this, 0f);
+			return new Path.Location(this, 0.0);
 		}
 
 		@Override
-		public Point pointAt(float p) {
+		public Point pointAt(double p) {
 			return point;
 		}
 
 		@Override
-		public Vector tangentAt(float p) {
+		public Vector tangentAt(double p) {
 			return tangent;
 		}
 
 		@Override
-		public PointPath pointTangentAt(float p) {
+		public PointPath pointTangentAt(double p) {
 			return PointPath.this;
 		}
 
 		@Override
 		// returns point paths - this path twice
-		public SplitPath splitAt(float p) {
+		public SplitPath splitAt(double p) {
 			return new SplitPath(PointPath.this, PointPath.this, false);
 		}
 
 		@Override
-		public Path segment(float minP, float maxP) {
+		public Path segment(double minP, double maxP) {
 			return PointPath.this;
 		}
 
 		@Override
-		public float parameterNearest(Point p) {
-			return 0f;
+		public double parameterNearest(Point p) {
+			return 0.0;
 		}
 
 		@Override
-		public float lengthAt(float p) {
-			return 0f;
+		public double lengthAt(double p) {
+			return 0.0;
 		}
 
 		@Override
@@ -213,8 +212,8 @@ public class PointPath implements Path, Linear {
 		}
 
 		@Override
-		public float intrinsicAt(float p) {
-			return 0f;
+		public double intrinsicAt(double p) {
+			return 0.0;
 		}
 
 	}

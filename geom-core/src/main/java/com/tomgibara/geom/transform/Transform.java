@@ -26,57 +26,57 @@ public final class Transform implements Transformable {
 	private static final int RIGHT_MASK =    ORIGIN_PRESERVING | /*maybe skew p*/  SCALE_PRESERVING | CHIRAL_PRESERVING | CIRCLE_PRESERVING | RECTILNEAR_PRESERVING;
 	private static final int IDENTITY_MASK = RIGHT_MASK | SKEW_PRESERVING;
 
-	private static final Transform IDENTITY = new Transform( 1f,  0f,  0f,  1f,  0f,  0f, IDENTITY_MASK );
-	private static final Transform ROT_90 =   new Transform( 0f, -1f,  1f,  0f,  0f,  0f, RIGHT_MASK    );
-	private static final Transform ROT_180 =  new Transform(-1f,  0f,  0f, -1f,  0f,  0f, IDENTITY_MASK );
-	private static final Transform ROT_270 =  new Transform( 0f,  1f,  0f, -1f,  0f,  0f, RIGHT_MASK    );
+	private static final Transform IDENTITY = new Transform( 1.0,  0.0,  0.0,  1.0,  0.0,  0.0, IDENTITY_MASK );
+	private static final Transform ROT_90 =   new Transform( 0.0, -1.0,  1.0,  0.0,  0.0,  0.0, RIGHT_MASK    );
+	private static final Transform ROT_180 =  new Transform(-1.0,  0.0,  0.0, -1.0,  0.0,  0.0, IDENTITY_MASK );
+	private static final Transform ROT_270 =  new Transform( 0.0,  1.0,  0.0, -1.0,  0.0,  0.0, RIGHT_MASK    );
 
 	public static Transform identity() {
 		return IDENTITY;
 	}
 
 	public static Transform rotateRightAngles(int quarterTurns) {
-		switch (quarterTurns & 3) {
-		case  0 : return IDENTITY;
-		case  1 : return ROT_90;
-		case  2 : return ROT_180;
-		case  3 : return ROT_270;
-		default : throw new IllegalStateException();
-		}
+        return switch (quarterTurns & 3) {
+            case 0 -> IDENTITY;
+            case 1 -> ROT_90;
+            case 2 -> ROT_180;
+            case 3 -> ROT_270;
+            default -> throw new IllegalStateException();
+        };
 	}
 
-	public static Transform translation(float x, float y) {
-		if (x == 0f && y == 0f) return IDENTITY;
-		return new Transform(1f, 0f, 0f, 1f, x, y, SKEW_PRESERVING | SCALE_PRESERVING | CHIRAL_PRESERVING | CIRCLE_PRESERVING | RECTILNEAR_PRESERVING);
+	public static Transform translation(double x, double y) {
+		if (x == 0.0 && y == 0.0) return IDENTITY;
+		return new Transform(1.0, 0.0, 0.0, 1.0, x, y, SKEW_PRESERVING | SCALE_PRESERVING | CHIRAL_PRESERVING | CIRCLE_PRESERVING | RECTILNEAR_PRESERVING);
 	}
 
-	public static Transform rotation(float angle) {
-		if (angle == 0f) return IDENTITY;
+	public static Transform rotation(double angle) {
+		if (angle == 0.0) return IDENTITY;
 
 		int flags = ORIGIN_PRESERVING | CHIRAL_PRESERVING | CIRCLE_PRESERVING | SCALE_PRESERVING;
 		// TODO trap right angles and set flags
-		float s = (float) Math.sin(angle);
-		float c = (float) Math.cos(angle);
-		if (s == 0f) {
-			switch (Math.round(c)) {
+		double s = Math.sin(angle);
+		double c = Math.cos(angle);
+		if (s == 0.0) {
+			switch ((int) Math.round(c)) {
 			case -1 : return IDENTITY;
 			case  1 : return ROT_180;
 			/* shouldn't be possible - but safe to fall through */
 			}
-		} else if (c == 0f) {
-			switch (Math.round(s)) {
+		} else if (c == 0.0) {
+			switch ((int) Math.round(s)) {
 			case -1 : return ROT_270;
 			case  1 : return ROT_90;
 			/* shouldn't be possible - but safe to fall through */
 			}
 		}
-		return new Transform(c, s, -s, c, 0f, 0f, flags);
+		return new Transform(c, s, -s, c, 0.0, 0.0, flags);
 	}
 
-	public static Transform rotationAbout(Point pt, float angle) {
+	public static Transform rotationAbout(Point pt, double angle) {
 		// trivial cases
 		if (pt.isOrigin()) return rotation(angle);
-		if (angle == 0f) return IDENTITY;
+		if (angle == 0.0) return IDENTITY;
 		//TODO make an optimize version of this
 		Transform a = Transform.translation(-pt.x, -pt.y);
 		Transform b = Transform.rotation(angle);
@@ -89,45 +89,45 @@ public final class Transform implements Transformable {
 		if (v == null) throw new IllegalArgumentException("null v");
 		if (v.isZero()) throw new IllegalArgumentException("zero v");
 		int flags = ORIGIN_PRESERVING | CIRCLE_PRESERVING | CHIRAL_PRESERVING;
-		if (v.x == 0f) {
+		if (v.x == 0.0) {
 			flags |= RECTILNEAR_PRESERVING;
-		} else if (v.y == 0f) {
+		} else if (v.y == 0.0) {
 			 flags |= RECTILNEAR_PRESERVING | SKEW_PRESERVING;
 		}
-		return new Transform(v.x, v.y, -v.y, v.x, 0f, 0f, flags);
+		return new Transform(v.x, v.y, -v.y, v.x, 0.0, 0.0, flags);
 	}
 
 	// TODO should allow zero scales?
-	public static Transform scale(float s) {
-		if (s == 0f) throw new IllegalArgumentException("non-invertible");
-		if (s == 1f) return IDENTITY;
+	public static Transform scale(double s) {
+		if (s == 0.0) throw new IllegalArgumentException("non-invertible");
+		if (s == 1.0) return IDENTITY;
 		int flags = ORIGIN_PRESERVING | SKEW_PRESERVING | CHIRAL_PRESERVING | CIRCLE_PRESERVING | RECTILNEAR_PRESERVING;
-		if (s == -1f) flags |= SCALE_PRESERVING;
+		if (s == -1.0) flags |= SCALE_PRESERVING;
 		return new Transform(s, 0, 0, s, 0, 0, flags);
 	}
 
-	public static Transform scale(float sx, float sy) {
+	public static Transform scale(double sx, double sy) {
 		if (sx == sy) return scale(sx);
 		return scaleAbout(Point.ORIGIN, sx, sy);
 	}
 
-	public static Transform scaleAbout(Point pt, float sx, float sy) {
-		if (sx == 0f || sy == 0f) throw new IllegalArgumentException("non-invertible");
-		if (sx == 1f && sy == 1f) return IDENTITY;
+	public static Transform scaleAbout(Point pt, double sx, double sy) {
+		if (sx == 0.0 || sy == 0.0) throw new IllegalArgumentException("non-invertible");
+		if (sx == 1.0 && sy == 1.0) return IDENTITY;
 		int flags = SKEW_PRESERVING | RECTILNEAR_PRESERVING;
 		if (pt.isOrigin()) flags |= ORIGIN_PRESERVING;
 		if (sx > 0 == sy > 0) flags |= CHIRAL_PRESERVING;
-		return new Transform(sx, 0, 0, sy, (1f - sx) * pt.x, (1f - sy) * pt.y, flags);
+		return new Transform(sx, 0, 0, sy, (1.0 - sx) * pt.x, (1.0 - sy) * pt.y, flags);
 	}
 
 	public static Transform translateAndScale(Rect from, Rect to) {
 		if (from.isDegenerate()) throw new IllegalArgumentException("from degenerate");
 		if (to.isDegenerate()) throw new IllegalArgumentException("to degenerate");
 
-		float wf = from.getWidth();
-		float hf = from.getHeight();
-		float wt = to.getWidth();
-		float ht = to.getHeight();
+		double wf = from.getWidth();
+		double hf = from.getHeight();
+		double wt = to.getWidth();
+		double ht = to.getHeight();
 		Point cf = from.getCenter();
 		Point ct = to.getCenter();
 
@@ -136,27 +136,27 @@ public final class Transform implements Transformable {
 		// no scaling case
 		if (wf == wt && hf == ht) {
 			return op ? IDENTITY :
-				new Transform(1f, 0f, 0f, 1f, ct.x - cf.x, ct.y - cf.y,
+				new Transform(1.0, 0.0, 0.0, 1.0, ct.x - cf.x, ct.y - cf.y,
 						SKEW_PRESERVING | RECTILNEAR_PRESERVING | CHIRAL_PRESERVING | SCALE_PRESERVING | CIRCLE_PRESERVING
 						);
 		} else {
-			float sx = wt/wf;
-			float sy = ht/hf;
+			double sx = wt/wf;
+			double sy = ht/hf;
 			//TODO could add circle preserving if sx == sy?
 			return op ?
-				new Transform(sx, 0f, 0f, sy, 0f, 0f,
+				new Transform(sx, 0.0, 0.0, sy, 0.0, 0.0,
 						SKEW_PRESERVING | RECTILNEAR_PRESERVING | CHIRAL_PRESERVING | ORIGIN_PRESERVING
 						) :
-				new Transform(sx, 0f, 0f, sy, ct.x - cf.x * sx, ct.y - cf.y * sy,
+				new Transform(sx, 0.0, 0.0, sy, ct.x - cf.x * sx, ct.y - cf.y * sy,
 						SKEW_PRESERVING | RECTILNEAR_PRESERVING | CHIRAL_PRESERVING
 						);
 		}
 	}
 
-	public static Transform skew(float sx, float sy) {
-		float p = sx * sy;
-		if (p == 1f) throw new IllegalArgumentException("non-invertible");
-		if (sx == 0f && sy == 0f) return IDENTITY;
+	public static Transform skew(double sx, double sy) {
+		double p = sx * sy;
+		if (p == 1.0) throw new IllegalArgumentException("non-invertible");
+		if (sx == 0.0 && sy == 0.0) return IDENTITY;
 		int flags = ORIGIN_PRESERVING;
 		if (p < 1) flags |= CHIRAL_PRESERVING;
 		if (sx == -sy) flags |= CIRCLE_PRESERVING;
@@ -164,20 +164,20 @@ public final class Transform implements Transformable {
 		return new Transform(1, sy, sx, 1, 0, 0, flags);
 	}
 
-	public static Transform components(float m00, float m10, float m01, float m11, float m02, float m12) {
+	public static Transform components(double m00, double m10, double m01, double m11, double m02, double m12) {
 		return new Transform(m00, m10, m01, m11, m02, m12);
 	}
 
 	private final int flags;
 
-	public final float m00; // scale x
-	public final float m10; // shear y
-	public final float m01; // shear x
-	public final float m11; // scale y
-	public final float m02; // translate x
-	public final float m12; // translate y
+	public final double m00; // scale x
+	public final double m10; // shear y
+	public final double m01; // shear x
+	public final double m11; // scale y
+	public final double m02; // translate x
+	public final double m12; // translate y
 
-	private Transform(float m00, float m10, float m01, float m11, float m02, float m12) {
+	private Transform(double m00, double m10, double m01, double m11, double m02, double m12) {
 		this.m00 = m00;
 		this.m10 = m10;
 		this.m01 = m01;
@@ -185,22 +185,22 @@ public final class Transform implements Transformable {
 		this.m02 = m02;
 		this.m12 = m12;
 
-		float det = m00 * m11 - m10 * m01;
-		if (det == 0f) throw new IllegalArgumentException("non-invertible transform");
-		if (Float.isInfinite(det) || Float.isInfinite(m02) || Float.isInfinite(m12)) throw new IllegalArgumentException("overflowing transform");
-		if (Float.isNaN(det) || Float.isNaN(m02) || Float.isNaN(m12)) throw new IllegalArgumentException("invalid transform");
+		double det = m00 * m11 - m10 * m01;
+		if (det == 0.0) throw new IllegalArgumentException("non-invertible transform");
+		if (Double.isInfinite(det) || Double.isInfinite(m02) || Double.isInfinite(m12)) throw new IllegalArgumentException("overflowing transform");
+		if (Double.isNaN(det) || Double.isNaN(m02) || Double.isNaN(m12)) throw new IllegalArgumentException("invalid transform");
 
 		int flags = 0;
-		if (m02 == 0f && m12 == 0f) flags |= ORIGIN_PRESERVING;
-		if (m10 == 0f && m01 == 0f) flags |= SKEW_PRESERVING;
+		if (m02 == 0.0 && m12 == 0.0) flags |= ORIGIN_PRESERVING;
+		if (m10 == 0.0 && m01 == 0.0) flags |= SKEW_PRESERVING;
 		if (Math.abs(det) == 1) flags |= SCALE_PRESERVING;
 		if (m10 == -m01 && m00 == m11) flags |= CIRCLE_PRESERVING;
-		if (det < 0f) flags |= CHIRAL_PRESERVING;
-		if (m10 == 0f && m01 == 0f) flags |= RECTILNEAR_PRESERVING;
+		if (det < 0.0) flags |= CHIRAL_PRESERVING;
+		if (m10 == 0.0 && m01 == 0.0) flags |= RECTILNEAR_PRESERVING;
 		this.flags = flags;
 	}
 
-	private Transform(float m00, float m10, float m01, float m11, float m02, float m12, int flags) {
+	private Transform(double m00, double m10, double m01, double m11, double m02, double m12, int flags) {
 		this.m00 = m00;
 		this.m10 = m10;
 		this.m01 = m01;
@@ -210,47 +210,47 @@ public final class Transform implements Transformable {
 		this.flags = flags;
 	}
 
-	public float[] getComponents() {
-		return new float[] { m00, m10, m01, m11, m02, m12 };
+	public double[] getComponents() {
+		return new double[] { m00, m10, m01, m11, m02, m12 };
 	}
 
-	public float getTrace() {
+	public double getTrace() {
 		return m00 + m11;
 	}
 
-	public float getDeterminant() {
+	public double getDeterminant() {
 		return m00 * m11 - m10 * m01;
 	}
 
 	public Vector getColumn(int index) {
-		switch (index) {
-		case 0 : return new Vector(m00, m10);
-		case 1 : return new Vector(m01, m11);
-		case 2 : return new Vector(m02, m12);
-		default: throw new IllegalArgumentException("invalid index");
-		}
+        return switch (index) {
+            case 0 -> new Vector(m00, m10);
+            case 1 -> new Vector(m01, m11);
+            case 2 -> new Vector(m02, m12);
+            default -> throw new IllegalArgumentException("invalid index");
+        };
 	}
 
 	//TODO optimize cases
 	public Transform getInverse() {
 		if (isIdentity()) return this;
-		float x00;
-		float x01;
-		float x10;
-		float x11;
-		float x02 = 0f;
-		float x12 = 0f;
+		double x00;
+		double x01;
+		double x10;
+		double x11;
+		double x02 = 0.0;
+		double x12 = 0.0;
 		if (isSkewPreserving()) {
-			x00 = 1f / m00;
-			x01 = 0f;
-			x10 = 0f;
-			x11 = 1f / m11;
+			x00 = 1.0 / m00;
+			x01 = 0.0;
+			x10 = 0.0;
+			x11 = 1.0 / m11;
 			if (!isOriginPreserving()) {
 				x02 = -x00 * m02;
 				x12 = -x11 * m12;
 			}
 		} else {
-			float d =  getDeterminant();
+			double d =  getDeterminant();
 			x00 =  m11 / d;
 			x10 = -m10 / d;
 			x01 = -m01 / d;
@@ -271,9 +271,9 @@ public final class Transform implements Transformable {
 		}
 
 		// identify eigenvalues
-		float t = getTrace() * 0.5f;
-		float d = getDeterminant();
-		float s = (float) Math.sqrt( Math.abs(t * t - d) );
+		double t = getTrace() * 0.5;
+		double d = getDeterminant();
+		double s = Math.sqrt( Math.abs(t * t - d) );
 		//TODO reverse if sign is neg?
 		return new Vector(t + s, t - s);
 	}
@@ -285,12 +285,12 @@ public final class Transform implements Transformable {
 		}
 
 		// identify eigenvalues
-		float t = getTrace() * 0.5f;
-		float d = getDeterminant();
+		double t = getTrace() * 0.5;
+		double d = getDeterminant();
 		//TODO check abs here
-		float s = (float) Math.sqrt( Math.abs(t * t - d) );
-		float e1 = t + s;
-		float e2 = t - s;
+		double s = Math.sqrt( Math.abs(t * t - d) );
+		double e1 = t + s;
+		double e2 = t - s;
 
 		Vector v1;
 		Vector v2;
@@ -305,31 +305,31 @@ public final class Transform implements Transformable {
 		v1 = norm.normalize(v1);
 		v2 = norm.normalize(v2);
 
-		float x00 = v1.x;
-		float x10 = v1.y;
-		float x01 = v2.x;
-		float x11 = v2.y;
+		double x00 = v1.x;
+		double x10 = v1.y;
+		double x01 = v2.x;
+		double x11 = v2.y;
 		//TODO what should these be?
-//		float x02 = -x01 * m12 - x00 * m02;
-//		float x12 = -x10 * m02 - x11 * m12;
-		float x02 = 0f;
-		float x12 = 0f;
+//		double x02 = -x01 * m12 - x00 * m02;
+//		double x12 = -x10 * m02 - x11 * m12;
+		double x02 = 0.0;
+		double x12 = 0.0;
 		return new Transform(x00, x10, x01, x11, x02, x12);
 	}
 
 	public boolean isFirstColumnMajor() {
-		float m0 = Norm.L2.powMagnitude(m00, m10);
-		float m1 = Norm.L2.powMagnitude(m01, m11);
+		double m0 = Norm.L2.powMagnitude(m00, m10);
+		double m1 = Norm.L2.powMagnitude(m01, m11);
 		return m0 >= m1;
 	}
 
 	public boolean isIdentity() {
 		// note: extra check needed because identity mask admits possibility that transform is 180deg rotation
-		return (flags & IDENTITY_MASK) == IDENTITY_MASK && m00 == 1f;
+		return (flags & IDENTITY_MASK) == IDENTITY_MASK && m00 == 1.0;
 	}
 
 	public boolean isIdentityOrTranslation() {
-		return (flags & (SKEW_PRESERVING | SCALE_PRESERVING)) == (SKEW_PRESERVING | SCALE_PRESERVING) && m00 == 1f;
+		return (flags & (SKEW_PRESERVING | SCALE_PRESERVING)) == (SKEW_PRESERVING | SCALE_PRESERVING) && m00 == 1.0;
 	}
 
 	public boolean isOriginPreserving() {
@@ -380,6 +380,15 @@ public final class Transform implements Transformable {
 				);
 	}
 
+	public Transform preservingOrigin() {
+		if (isOriginPreserving()) return this;
+		return new Transform(m00, m10, m01, m11, 0.0, 0.0, flags | ORIGIN_PRESERVING);
+	}
+
+	public Point origin() {
+		return new Point(m02, m12);
+	}
+
 	public Transformable transform(Transformable t) {
 		if (t == null) throw new IllegalArgumentException("null t");
 		return t.apply(this);
@@ -390,7 +399,7 @@ public final class Transform implements Transformable {
 	}
 
 	//TODO would vector be a better return type?
-	public Point transform(float x, float y) {
+	public Point transform(double x, double y) {
 		return transformImpl(new Pair(x, y)).asPoint();
 	}
 
@@ -420,7 +429,7 @@ public final class Transform implements Transformable {
 		return rightTurns >= 0 ? vector.rotateThroughRightAngles(rightTurns) : transformImpl(new Pair(vector)).asVector();
 	}
 
-	public float transform(float angle) {
+	public double transform(double angle) {
 		if (isCirclePreserving()) {
 			if (isRectilinearPreserving()) {
 				if (isSkewPreserving()) {
@@ -429,12 +438,12 @@ public final class Transform implements Transformable {
 					return m10 > 0 ? angle + Angles.PI_BY_TWO : angle - Angles.PI_BY_TWO;
 				}
 			} else {
-				float theta = (float) Math.atan2(m10, m00);
+				double theta = Math.atan2(m10, m00);
 				return angle + theta;
 			}
 		} else {
 			Transform t = Transform.rotation(angle).apply(this);
-			return (float) Math.atan2(t.m10, t.m00);
+			return Math.atan2(t.m10, t.m00);
 		}
 	}
 
@@ -445,8 +454,8 @@ public final class Transform implements Transformable {
 		if (isIdentity()) return rect;
 		Pair pair = new Pair(rect.minX, rect.minY);
 		transformImpl(pair);
-		float x = pair.x;
-		float y = pair.y;
+		double x = pair.x;
+		double y = pair.y;
 		pair.setXY(rect.maxX, rect.maxY);
 		transformImpl(pair);
 		return Rect.atPoints(x, y, pair.x, pair.y);
@@ -500,7 +509,7 @@ public final class Transform implements Transformable {
 		transformImpl(vectors, 0, vectors.length);
 	}
 
-	public void transform(float[] coords, int from, int to) {
+	public void transform(double[] coords, int from, int to) {
 		if (coords == null) throw new IllegalArgumentException("null coords");
 		if (to < from) throw new IllegalArgumentException("to less than from");
 		if (from < 0) throw new IllegalArgumentException("from negative");
@@ -509,13 +518,13 @@ public final class Transform implements Transformable {
 		transformImpl(coords, from, to);
 	}
 
-	public void transform(float[] coords) {
+	public void transform(double[] coords) {
 		if (coords == null) throw new IllegalArgumentException("null coords");
 		if ((coords.length & 1) != 0) throw new IllegalArgumentException("uneven coords length");
 		transformImpl(coords, 0, coords.length);
 	}
 
-	public void transform(float[] src, float[] dst, int srcOffset, int dstOffset, int count) {
+	public void transform(double[] src, double[] dst, int srcOffset, int dstOffset, int count) {
 		if (src == null) throw new IllegalArgumentException("null src");
 		if (dst == null) throw new IllegalArgumentException("null dst");
 		if (count < 0) throw new IllegalArgumentException("negative count");
@@ -527,7 +536,7 @@ public final class Transform implements Transformable {
 		transformImpl(src, dst, srcOffset, dstOffset, count);
 	}
 
-	public void transform(float[] src, float[] dst) {
+	public void transform(double[] src, double[] dst) {
 		if (src == null) throw new IllegalArgumentException("null src");
 		if (dst == null) throw new IllegalArgumentException("null dst");
 		if ((src.length & 1) != 0) throw new IllegalArgumentException("src length uneven");
@@ -537,25 +546,24 @@ public final class Transform implements Transformable {
 
 	@Override
 	public int hashCode() {
-		return Float.floatToIntBits(m00) +
-				31 * Float.floatToIntBits(m10) +
-				31 * 31 * Float.floatToIntBits(m01) +
-				31 * 31 * 31 * Float.floatToIntBits(m11) +
-				31 * 31 * 31 * 31 * Float.floatToIntBits(m02) +
-				31 * 31 * 31 * 31 * 31 * Float.floatToIntBits(m12);
+		return Double.hashCode(m00) +
+				31 * Double.hashCode(m10) +
+				31 * 31 * Double.hashCode(m01) +
+				31 * 31 * 31 * Double.hashCode(m11) +
+				31 * 31 * 31 * 31 * Double.hashCode(m02) +
+				31 * 31 * 31 * 31 * 31 * Double.hashCode(m12);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof Transform)) return false;
-		Transform that = (Transform) obj;
-		return
+		if (!(obj instanceof Transform that)) return false;
+        return
 				this.m00 == that.m00 &&
 				this.m10 == that.m10 &&
 				this.m01 == that.m01 &&
 				this.m11 == that.m11 &&
-				this.m02 == that.m12 &&
+				this.m02 == that.m02 &&
 				this.m12 == that.m12;
 	}
 
@@ -564,17 +572,13 @@ public final class Transform implements Transformable {
 		return m00 + ", " + m10 + ", " + m01 + ", " + m11 + ", " + m02 + ", " + m12;
 	}
 
-//	private boolean isRight() {
-//		return ;
-//	}
-
 	// -1 if not applicable
 	private int getRightTurns() {
 		if ((flags & RIGHT_MASK) != RIGHT_MASK) return -1;
 		if (isSkewPreserving()) {
-			return m00 > 0f ? 0 : 2;
+			return m00 > 0.0 ? 0 : 2;
 		} else {
-			return m10 > 0f ? 3 : 1;
+			return m10 > 0.0 ? 3 : 1;
 		}
 	}
 
@@ -594,7 +598,7 @@ public final class Transform implements Transformable {
 		}
 	}
 
-	private void transformImpl(float[] coords, int from, int to) {
+	private void transformImpl(double[] coords, int from, int to) {
 		Pair pair = new Pair();
 		for (int i = from; i < to;) {
 			pair.x = coords[i    ];
@@ -605,7 +609,7 @@ public final class Transform implements Transformable {
 		}
 	}
 
-	private void transformImpl(float[] src, float[] dst, int srcOffset, int dstOffset, int count) {
+	private void transformImpl(double[] src, double[] dst, int srcOffset, int dstOffset, int count) {
 		Pair pair = new Pair();
 		int limit = srcOffset + count;
 		int offset0 = dstOffset - srcOffset - 2;
@@ -621,8 +625,8 @@ public final class Transform implements Transformable {
 
 	// assumes not identity
 	private Pair transformImpl(Pair pair) {
-		float x = pair.x;
-		float y = pair.y;
+		double x = pair.x;
+		double y = pair.y;
 
 		int flags = this.flags;
 		if (pair.noTrans) flags |= ORIGIN_PRESERVING;
@@ -663,13 +667,13 @@ public final class Transform implements Transformable {
 	}
 
 	private static final class Pair {
-		float x;
-		float y;
+		double x;
+		double y;
 		boolean noTrans;
 
 		Pair() { }
 
-		Pair(float x, float y) {
+		Pair(double x, double y) {
 			this.x = x;
 			this.y = y;
 			noTrans = false;
@@ -696,7 +700,7 @@ public final class Transform implements Transformable {
 			return this;
 		}
 
-		Pair setXY(float x, float y) {
+		Pair setXY(double x, double y) {
 			this.x = x;
 			this.y = y;
 			noTrans = false;

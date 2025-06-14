@@ -14,13 +14,13 @@ import com.tomgibara.geom.path.PolygonalPath;
 
 public interface Cap {
 
-	public static final ButtCap BUTT_CAP = new ButtCap();
-	public static final SquareCap SQUARE_CAP = new SquareCap();
-	public static final RoundCap ROUND_CAP = new RoundCap();
+	ButtCap BUTT_CAP = new ButtCap();
+	SquareCap SQUARE_CAP = new SquareCap();
+	RoundCap ROUND_CAP = new RoundCap();
 
 	Path cap(PointPath startPtAndTan, PointPath finishPtAndTan, Point center);
 
-	public static final class ButtCap implements Cap {
+	class ButtCap implements Cap {
 
 		ButtCap() { }
 
@@ -41,8 +41,8 @@ public interface Cap {
 		public Path cap(PointPath startPtAndTan, PointPath finishPtAndTan, Point center) {
 			Point start = startPtAndTan.getStart();
 			Point finish = finishPtAndTan.getStart();
-			float width = Norm.L2.distanceBetween(start, finish);
-			float length = width * 0.5f;
+			double width = Norm.L2.distanceBetween(start, finish);
+			double length = width * 0.5;
 			return PolygonalPath.builder()
 				.addPoint(start)
 				.addPoint(startPtAndTan.getTangentAsSegment().scaleLength(length).getFinish())
@@ -71,11 +71,11 @@ public interface Cap {
 
 			//TODO shouldn't assume v1 & v2 are the same length
 			// ideally want to use an ellipse
-			float radius = v1.getMagnitude();
-			float a1 = v1.getAngle();
+			double radius = v1.getMagnitude();
+			double a1 = v1.getAngle();
 
-			//float a2 = a1 + v1.angleTo(v2);
-			float a2 = v2.getAngle();
+			//double a2 = a1 + v1.angleTo(v2);
+			double a2 = v2.getAngle();
 			if (side1 > 0) {
 				if (a2 < a1) a2 += Angles.TWO_PI;
 			} else {
