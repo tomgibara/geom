@@ -4,15 +4,15 @@ import java.util.List;
 
 public interface CompositePath extends Path {
 
-	int getSubpathCount();
+    int getSubpathCount();
 
-	Path getFirstPath();
+    Path getFirstPath();
 
-	Path getLastPath();
+    Path getLastPath();
 
-	List<? extends Path> getSubpaths();
+    List<? extends Path> getSubpaths();
 
-	//TODO necessary?
-	Path.Location locateAtLength(double p);
+    //TODO necessary?
+    Path.Location locateAtLength(double p);
 
 }
