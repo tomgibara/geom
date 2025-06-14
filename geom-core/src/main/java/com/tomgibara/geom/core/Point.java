@@ -11,7 +11,7 @@ public final class Point implements Geometric {
     public static class Util {
 
         public static Point midpoint(Point pt1, Point pt2) {
-            return midpoint(pt1.x, pt2.y, pt2.x, pt2.y);
+            return midpoint(pt1.x, pt1.y, pt2.x, pt2.y);
         }
 
         public static Point midpoint(double x1, double y1, double x2, double y2) {

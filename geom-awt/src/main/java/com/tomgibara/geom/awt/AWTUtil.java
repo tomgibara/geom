@@ -68,7 +68,7 @@ public class AWTUtil {
 
     public static Rect fromRectangle(Rectangle r) {
         if (r == null) throw new IllegalArgumentException("null r");
-        return Rect.atPoints(r.x, r.y, r.x + r.width, r.x + r.height);
+        return Rect.atPoints(r.x, r.y, r.x + r.width, r.y + r.height);
     }
 
     public static Rect fromRectangle(Rectangle2D.Float r) {
@@ -78,7 +78,7 @@ public class AWTUtil {
 
     public static Rect fromRectangle(Rectangle2D r) {
         if (r == null) throw new IllegalArgumentException("null r");
-        return Rect.atPoints(r.getMinY(), r.getMinY(), r.getMaxX(), r.getMaxY());
+        return Rect.atPoints(r.getMinX(), r.getMinY(), r.getMaxX(), r.getMaxY());
     }
 
     public static Line2D.Double toLine(LineSegment lineSegment) {
