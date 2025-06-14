@@ -6,7 +6,7 @@ set -e
 if ! command -v java >/dev/null 2>&1; then
   echo "Java not found. Installing OpenJDK..."
   apt-get update
-  DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-11-jdk
+  DEBIAN_FRONTEND=noninteractive apt-get install -y openjdk-21-jdk
 fi
 
 # Install Maven if it is not present
