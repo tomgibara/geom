@@ -5,8 +5,8 @@ import com.tomgibara.geom.transform.Transform;
 
 public interface Traceable extends Geometric {
 
-	Path getPath();
+    Path getPath();
 
-	@Override
-	Traceable apply(Transform transform);
+    @Override
+    Traceable apply(Transform transform);
 }

@@ -2,17 +2,17 @@ package com.tomgibara.geom.core;
 
 public interface Linear {
 
-	Vector getTangent();
+    Vector getTangent();
 
-	Vector getNormal();
+    Vector getNormal();
 
-	Point nearestPointTo(Point pt);
+    Point nearestPointTo(Point pt);
 
-	Line getLine();
+    Line getLine();
 
-	LineSegment bounded(Rect bounds);
+    LineSegment bounded(Rect bounds);
 
-	int sideOf(Point point);
+    int sideOf(Point point);
 
-	int sideOf(double x, double y);
+    int sideOf(double x, double y);
 }

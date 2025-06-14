@@ -7,14 +7,14 @@ import com.tomgibara.geom.transform.Transform;
 
 public interface Contour extends Geometric {
 
-	@Override
-	Contour apply(Transform t);
+    @Override
+    Contour apply(Transform t);
 
-	Path getPath();
+    Path getPath();
 
-	Path getPathStartingAt(Point pt);
+    Path getPathStartingAt(Point pt);
 
-	Contour getReverse();
+    Contour getReverse();
 
-	Geometric getGeometry();
+    Geometric getGeometry();
 }

@@ -4,6 +4,6 @@ import junit.framework.TestCase;
 
 public class GeomUtilTest extends TestCase {
 
-	public void testTodo() {}
+    public void testTodo() {}
 
 }

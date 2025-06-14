@@ -4,6 +4,6 @@ import com.tomgibara.geom.transform.Transformable;
 
 public interface Geometric extends Transformable {
 
-	Rect getBounds();
+    Rect getBounds();
 
 }
