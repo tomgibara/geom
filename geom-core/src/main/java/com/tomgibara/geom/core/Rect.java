@@ -146,7 +146,7 @@ public final class Rect implements Geometric {
         double x1 = minX + offset.toMinX;
         double y1 = minY + offset.toMinY;
         double x2 = maxX + offset.toMaxX;
-        double y2 = maxX + offset.toMaxY;
+        double y2 = maxY + offset.toMaxY;
         //TODO do this more efficiently: if it flips hz or vt then slower path
         // ie if hz. growth + width < 0 flip x1 x2
         // ditto vt. growth
