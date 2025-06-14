@@ -15,6 +15,8 @@ import com.tomgibara.geom.core.Point;
 import com.tomgibara.geom.core.Rect;
 import com.tomgibara.geom.core.Vector;
 import com.tomgibara.geom.curve.BezierCurve;
+import com.tomgibara.geom.curve.Ellipse;
+import com.tomgibara.geom.curve.EllipticalArc;
 import com.tomgibara.geom.transform.Transform;
 
 public class SequencePath implements CompositePath {
@@ -80,9 +82,9 @@ public class SequencePath implements CompositePath {
 		public Builder addPaths(Path... paths) {
 			if (paths == null) throw new IllegalArgumentException("null paths");
 			if (paths.length == 0) return this;
-			for (int i = 0; i < paths.length; i++) {
-				if (paths[i] == null) throw new IllegalArgumentException("null path");
-			}
+            for (Path path : paths) {
+                if (path == null) throw new IllegalArgumentException("null path");
+            }
 			checkNoPoints();
 			return safeAddPaths(paths);
 		}
@@ -113,7 +115,7 @@ public class SequencePath implements CompositePath {
 
 		Builder safeAddPaths(List<Path> paths) {
 			if (endpoint != null) {
-				Point start = paths.get(0).getStart();
+				Point start = paths.getFirst().getStart();
 				if (policy != Policy.IGNORE && !endpoint.equals(start)) {
 					switch (policy) {
 					case FAIL : throw new IllegalArgumentException("non-contiguous: " + endpoint + " != " + start);
@@ -124,7 +126,7 @@ public class SequencePath implements CompositePath {
 				}
 			}
 			this.paths.addAll(paths);
-			endpoint = paths.get(paths.size() - 1).getFinish();
+			endpoint = paths.getLast().getFinish();
 			return this;
 		}
 
@@ -135,7 +137,7 @@ public class SequencePath implements CompositePath {
 		}
 
 		@Override
-		public Builder addPoint(float x, float y) {
+		public Builder addPoint(double x, double y) {
 			return safeAddPoint(new Point(x, y));
 		}
 
@@ -148,8 +150,8 @@ public class SequencePath implements CompositePath {
 			if (pts == null) throw new IllegalArgumentException("null pts");
 			for (Point pt : pts) {
 				if (pt == null) throw new IllegalArgumentException("null pt");
-				safeAddPoints(pts);
 			}
+			safeAddPoints(pts);
 			return this;
 		}
 
@@ -172,11 +174,11 @@ public class SequencePath implements CompositePath {
 			return this;
 		}
 
-		public Builder addPoints(float... coords) {
+		public Builder addPoints(double... coords) {
 			return addPoints(coords, 0, coords.length);
 		}
 
-		public Builder addPoints(float[] coords, int offset, int length) {
+		public Builder addPoints(double[] coords, int offset, int length) {
 			if (coords == null) throw new IllegalArgumentException("null coords");
 			if (offset < 0) throw new IllegalArgumentException("negative offset");
 			if (length < 0) throw new IllegalArgumentException("negative length");
@@ -241,6 +243,37 @@ public class SequencePath implements CompositePath {
 
 		}
 
+		public Builder asCircularArc() {
+			int count = points.size();
+			if (endpoint != null) count++;
+			if (count < 3) throw new IllegalStateException("insufficient points");
+			Point start = endpoint == null ? points.remove() : endpoint;
+			Point middle = points.remove();
+			Point finish = points.remove();
+			boolean badStart = start.equals(middle);
+			boolean badFinish = finish.equals(middle);
+			if (badStart && badFinish) {
+				return this;
+			}
+			if (badStart || badFinish) {
+				return safeAddPath( LineSegment.fromPoints(start, finish).getPath() );
+			}
+			return safeAddPath( EllipticalArc.circularArcThroughThreePoints(start, middle, finish).getPath() );
+		}
+
+		public Builder asCircularArc(double angle) {
+			int count = points.size();
+			if (endpoint != null) count++;
+			if (count < 2) throw new IllegalStateException("insufficient points");
+			Point start = endpoint == null ? points.remove() : endpoint;
+			Point center = points.remove();
+			Vector vector = center.vectorTo(start);
+			double radius = vector.getMagnitude();
+			double startAngle = vector.getAngle();
+			Ellipse ellipse = Ellipse.fromRadius(center, radius);
+			return safeAddPath( ellipse.arc(startAngle, startAngle + angle).getPath() );
+		}
+
 		public SequencePath closeAndBuild() {
 			return build(true);
 		}
@@ -293,14 +326,13 @@ public class SequencePath implements CompositePath {
 				//TODO can we do anything better here?
 				paths.add(PointPath.from(endpoint, Vector.UNIT_X));
 			} else if (closed) {
-				Point start = paths.get(0).getStart();
+				Point start = paths.getFirst().getStart();
 				if (!start.equals(endpoint)) {
 					safeAddPath(LineSegment.fromPoints(endpoint, start).getPath());
 				}
 			}
-			Path[] array = (Path[]) paths.toArray(new Path[paths.size()]);
-			SequencePath path = new SequencePath(closed, -1f, array);
-			return path;
+			Path[] array = paths.toArray(Path[]::new);
+			return new SequencePath(closed, -1.0, array);
 		}
 
 	}
@@ -313,7 +345,7 @@ public class SequencePath implements CompositePath {
 	private final boolean closed;
 	private List<Path> publicPaths = null;
 	private Parameterizations params = null;
-	private float length;
+	private double length;
 	private Boolean rectilinear;
 
 	public SequencePath(boolean closed, List<? extends Path> paths) {
@@ -334,10 +366,10 @@ public class SequencePath implements CompositePath {
 		}
 		this.paths = array;
 		this.closed = closed;
-		this.length = -1f;
+		this.length = -1.0;
 	}
 
-	private SequencePath(boolean closed, float length, Path... paths) {
+	private SequencePath(boolean closed, double length, Path... paths) {
 		this.paths = paths;
 		this.closed = closed;
 		this.length = length;
@@ -354,7 +386,7 @@ public class SequencePath implements CompositePath {
 	}
 
 	@Override
-	public float getLength() {
+	public double getLength() {
 		return length == -1 ? length = computeLength() : length;
 	}
 
@@ -408,8 +440,8 @@ public class SequencePath implements CompositePath {
 		int length = paths.length;
 		if (length == 1) return paths[0].simplify();
 		int i = length / 2;
-		SequencePath p1 = new SequencePath(false, -1f, Arrays.copyOfRange(paths, 0, i));
-		SequencePath p2 = new SequencePath(false, -1f, Arrays.copyOfRange(paths, i, paths.length));
+		SequencePath p1 = new SequencePath(false, -1.0, Arrays.copyOfRange(paths, 0, i));
+		SequencePath p2 = new SequencePath(false, -1.0, Arrays.copyOfRange(paths, i, paths.length));
 		return new SimplifiedPath(new SplitPath(p1, p2, closed));
 	}
 
@@ -433,8 +465,8 @@ public class SequencePath implements CompositePath {
 		// possible corner at start of closed path
 		boolean joinFirstAndLast = false;
 		if (closed) {
-			Vector v1 = paths[paths.length - 1].byIntrinsic().tangentAt(1f);
-			Vector v2 = paths[0].byIntrinsic().tangentAt(0f);
+			Vector v1 = paths[paths.length - 1].byIntrinsic().tangentAt(1.0);
+			Vector v2 = paths[0].byIntrinsic().tangentAt(0.0);
 			joinFirstAndLast = context.isCorner(v1, v2);
 		}
 		List<Path> acc = new ArrayList<>();
@@ -448,9 +480,9 @@ public class SequencePath implements CompositePath {
 			} else { // p1 is not smooth but does not need combining with anything before it
 				// flush the accumulated paths
 				if (acc.isEmpty()) {
-					list.add(smoothPaths.get(0)); // we know this is followed by corner
+					list.add(smoothPaths.getFirst()); // we know this is followed by corner
 				} else { // p1 is not smooth, attach first to previous and continue
-					acc.add(smoothPaths.get(0));
+					acc.add(smoothPaths.getFirst());
 					list.add(new SequencePath(false, acc));
 					acc.clear();
 				}
@@ -463,8 +495,8 @@ public class SequencePath implements CompositePath {
 			// p1 may be followed by corner
 			if (i < paths.length - 1) {
 				Path p2 = paths[i + 1];
-				Vector v1 = p1.byIntrinsic().tangentAt(1f);
-				Vector v2 = p2.byIntrinsic().tangentAt(0f);
+				Vector v1 = p1.byIntrinsic().tangentAt(1.0);
+				Vector v2 = p2.byIntrinsic().tangentAt(0.0);
 				boolean smooth = !context.isCorner(v1, v2);
 				if (!smooth) { // flush accumulated paths we know the end in a corner
 					list.add(new SequencePath(false, acc));
@@ -479,13 +511,11 @@ public class SequencePath implements CompositePath {
 			if (list.isEmpty()) {
 				list.add(this);
 			} else {
-				Path first = list.get(0);
+				Path first = list.getFirst();
 				// try to avoid nesting sequence paths unecessarily
 				if (first instanceof SequencePath) {
 					Path[] smoothPaths = ((SequencePath) first).paths;
-					for (int i = 0; i < smoothPaths.length; i++) {
-						acc.add(smoothPaths[i]);
-					}
+                    Collections.addAll(acc, smoothPaths);
 				} else {
 					acc.add(first);
 				}
@@ -517,7 +547,7 @@ public class SequencePath implements CompositePath {
 	}
 
 	@Override
-	public Path.Location locateAtLength(float p) {
+	public Path.Location locateAtLength(double p) {
 		return getParams().locateAtLength(p);
 	}
 
@@ -531,7 +561,7 @@ public class SequencePath implements CompositePath {
 	}
 
 	@Override
-	public Path apply(Transform t) {
+	public SequencePath apply(Transform t) {
 		List<Path> list = new ArrayList<>();
 		Path tPrev = null;
 		for (Path path : paths) {
@@ -546,8 +576,8 @@ public class SequencePath implements CompositePath {
 			list.add(tPath);
 			tPrev = tPath;
 		}
-		Path[] array = (Path[]) list.toArray(new Path[list.size()]);
-		return new SequencePath(closed, t.isScalePreserving() ? length : -1f, array);
+		Path[] array = list.toArray(Path[]::new);
+		return new SequencePath(closed, t.isScalePreserving() ? length : -1.0, array);
 	}
 
 	@Override
@@ -559,8 +589,8 @@ public class SequencePath implements CompositePath {
 		return params == null ? params = new Parameterizations(this, getSubpaths()) : params;
 	}
 
-	private float computeLength() {
-		float sum = 0f;
+	private double computeLength() {
+		double sum = 0.0;
 		for (Path path : paths) {
 			sum += path.getLength();
 		}
@@ -588,7 +618,7 @@ public class SequencePath implements CompositePath {
 		}
 
 		@Override
-		public C addPoint(float x, float y) {
+		public C addPoint(double x, double y) {
 			if (skipNext) {
 				skipNext = false;
 				return null;

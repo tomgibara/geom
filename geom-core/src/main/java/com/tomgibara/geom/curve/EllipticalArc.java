@@ -11,8 +11,8 @@ import com.tomgibara.geom.transform.Transform;
 
 public class EllipticalArc extends Curve {
 
-	private static float frac(float f) {
-		float i = (float) Math.floor(f);
+	private static double frac(double f) {
+		double i = Math.floor(f);
 		return f - i;
 	}
 
@@ -21,34 +21,34 @@ public class EllipticalArc extends Curve {
 		return circularArcThroughThreePoints(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 	}
 
-	private static EllipticalArc circularArcThroughThreePoints(float x1, float y1, float x2, float y2, float x3, float y3) {
-		float d = 2 * (x1 - x3) * (y3 - y2) + 2 * (x2 - x3) * (y1 - y3);
-		float m1 = x1 * x1 - x3 * x3 + y1 * y1 - y3 * y3;
-		float m2 = x3 * x3 - x2 * x2 + y3 * y3 - y2 * y2;
-		float nx = m1 * (y3 - y2) + m2 * (y3 - y1);
-		float ny = m1 * (x2 - x3) + m2 * (x1 - x3);
-		float cx = nx / d;
-		float cy = ny / d;
-		float r = (float) Math.hypot(x1 - cx, y1 - cy);
-		float a1 = (float) Math.atan2(y1 - cy, x1 - cx);
-		float a2 = (float) Math.atan2(y2 - cy, x2 - cx); //TODO computing this is inefficient - is there a better approach?
-		float a3 = (float) Math.atan2(y3 - cy, x3 - cx);
+	private static EllipticalArc circularArcThroughThreePoints(double x1, double y1, double x2, double y2, double x3, double y3) {
+		double d = 2 * (x1 - x3) * (y3 - y2) + 2 * (x2 - x3) * (y1 - y3);
+		double m1 = x1 * x1 - x3 * x3 + y1 * y1 - y3 * y3;
+		double m2 = x3 * x3 - x2 * x2 + y3 * y3 - y2 * y2;
+		double nx = m1 * (y3 - y2) + m2 * (y3 - y1);
+		double ny = m1 * (x2 - x3) + m2 * (x1 - x3);
+		double cx = nx / d;
+		double cy = ny / d;
+		double r = Math.hypot(x1 - cx, y1 - cy);
+		double a1 = Math.atan2(y1 - cy, x1 - cx);
+		double a2 = Math.atan2(y2 - cy, x2 - cx); //TODO computing this is inefficient - is there a better approach?
+		double a3 = Math.atan2(y3 - cy, x3 - cx);
 
-		float adj;
+		double adj;
 		if (a1 < a3) {
-			adj = a1 <= a2 && a2 <= a3 ? 0f : -Angles.TWO_PI;
+			adj = a1 <= a2 && a2 <= a3 ? 0.0 : -Angles.TWO_PI;
 		} else {
-			adj = a3 <= a2 && a2 <= a1 ? 0f : +Angles.TWO_PI;
+			adj = a3 <= a2 && a2 <= a1 ? 0.0 : +Angles.TWO_PI;
 		}
 
 		return new EllipticalArc(Ellipse.fromRadius(new Point(cx, cy), r), a1 / Angles.TWO_PI, (a3 + adj) / Angles.TWO_PI);
 	}
 
 	private final Ellipse geom;
-	private final float startAngle;
-	private final float finishAngle;
+	private final double startAngle;
+	private final double finishAngle;
 
-	EllipticalArc(Ellipse geom, float startAngle, float finishAngle) {
+	EllipticalArc(Ellipse geom, double startAngle, double finishAngle) {
 		this.geom = geom;
 		this.startAngle = startAngle;
 		this.finishAngle = finishAngle;
@@ -58,23 +58,23 @@ public class EllipticalArc extends Curve {
 		return geom;
 	}
 
-	public float getStartAngle() {
+	public double getStartAngle() {
 		return Angles.TWO_PI * startAngle;
 	}
 
-	public float getFinishAngle() {
+	public double getFinishAngle() {
 		return Angles.TWO_PI * finishAngle;
 	}
 
 	@Override
-	public Point pointAt(float p) {
+	public Point pointAt(double p) {
 		return geom.getPoint(angle(clamp(p)));
 	}
 
 	@Override
-	public Vector tangentAt(float p) {
-		float ra = startAngle > finishAngle ? - Angles.PI_BY_TWO : + Angles.PI_BY_TWO;
-		float angle = angle(clamp(p)) * TWO_PI + ra;
+	public Vector tangentAt(double p) {
+		double ra = startAngle > finishAngle ? - Angles.PI_BY_TWO : + Angles.PI_BY_TWO;
+		double angle = angle(clamp(p)) * TWO_PI + ra;
 		Vector tangent = new Vector(angle);
 		Transform transform = geom.getTransform();
 		//TODO how to optimize?
@@ -86,8 +86,8 @@ public class EllipticalArc extends Curve {
 	}
 
 	@Override
-	public SplitCurvePath splitAt(float p) {
-		float angle = angle(clamp(p));
+	public SplitCurvePath splitAt(double p) {
+		double angle = angle(clamp(p));
 		CurvePath s1 = new EllipticalArc(geom, startAngle, angle).getPath();
 		CurvePath s2 = new EllipticalArc(geom, angle, finishAngle).getPath();
 		return new SplitCurvePath(s1, s2, isClosed());
@@ -107,7 +107,7 @@ public class EllipticalArc extends Curve {
 	protected boolean isLinear() {
 		//TODO need to use length of major axis - or better
 		//TODO should be configurable tolerance
-		return Math.abs(finishAngle - startAngle) * geom.getBounds().getDiagonalLength() < 0.1f;
+		return Math.abs(finishAngle - startAngle) * geom.getBounds().getDiagonalLength() < 0.1;
 	}
 
 	@Override
@@ -125,7 +125,7 @@ public class EllipticalArc extends Curve {
 		return "angle [" + startAngle + "," + finishAngle + "] on ellipse " + geom;
 	}
 
-	private float angle(float p) {
+	private double angle(double p) {
 		return startAngle + (finishAngle - startAngle) * p;
 	}
 
@@ -133,11 +133,11 @@ public class EllipticalArc extends Curve {
 		//TODO must have a better implementation that is sensitive to proximity to major axis
 		K k = null;
 		//TODO properly fix
-		//int steps = Math.round(geom.getBounds().getDiagonalLength() / 0.1f);
+		//int steps = Math.round(geom.getBounds().getDiagonalLength() / 0.1.0);
 		int steps = 20;
-		float d = 1f / steps;
+		double d = 1.0 / steps;
 		for (int i = 0; i <= steps; i++) {
-			float angle = (startAngle * (steps - i) + finishAngle * i) * d;
+			double angle = (startAngle * (steps - i) + finishAngle * i) * d;
 			k = consumer.addPoint(geom.getPoint(angle));
 		}
 		return k;

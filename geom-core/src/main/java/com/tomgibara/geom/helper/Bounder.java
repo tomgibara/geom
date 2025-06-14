@@ -5,13 +5,13 @@ import com.tomgibara.geom.core.Rect;
 
 public final class Bounder implements Point.Consumer<Bounder> {
 
-	private float minX = Float.POSITIVE_INFINITY;
-	private float minY = Float.POSITIVE_INFINITY;
-	private float maxX = Float.NEGATIVE_INFINITY;
-	private float maxY = Float.NEGATIVE_INFINITY;
+	private double minX = Double.POSITIVE_INFINITY;
+	private double minY = Double.POSITIVE_INFINITY;
+	private double maxX = Double.NEGATIVE_INFINITY;
+	private double maxY = Double.NEGATIVE_INFINITY;
 
 	@Override
-	public Bounder addPoint(float x, float y) {
+	public Bounder addPoint(double x, double y) {
 		minX = Math.min(minX, x);
 		minY = Math.min(minY, y);
 		maxX = Math.max(maxX, x);

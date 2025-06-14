@@ -64,8 +64,8 @@ public class RectContour implements Contour {
 	//  0 TR, 1 BR, 2 BL, 3 TL
 	// -1 T, -2 L, -3 B, -4 R
 	private int positionOf(Point pt) {
-		float x = pt.x;
-		float y = pt.y;
+		double x = pt.x;
+		double y = pt.y;
 		Rect rect = path.getBounds();
 		if (x == rect.minX) {
 			if (y == rect.minY) return 3;

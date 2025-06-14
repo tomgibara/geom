@@ -14,29 +14,29 @@ public interface Parameterization {
 
 	// duplicated for efficiency (to avoid creating intermediate path locations)
 
-	Point pointAt(float p);
+	Point pointAt(double p);
 
-	Vector tangentAt(float p);
+	Vector tangentAt(double p);
 
-	PointPath pointTangentAt(float p);
+	PointPath pointTangentAt(double p);
 
-	SplitPath splitAt(float p);
+	SplitPath splitAt(double p);
 
-	Path segment(float minP, float maxP);
+	Path segment(double minP, double maxP);
 
-	float parameterNearest(Point p);
+	double parameterNearest(Point p);
 
 	List<Path.Corner> getCorners();
 
 	public interface ByIntrinsic extends Parameterization {
 
-		float lengthAt(float p);
+		double lengthAt(double p);
 
 	}
 
 	public interface ByLength extends Parameterization {
 
-		float intrinsicAt(float p);
+		double intrinsicAt(double p);
 
 	}
 

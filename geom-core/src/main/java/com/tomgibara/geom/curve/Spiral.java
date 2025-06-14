@@ -6,17 +6,17 @@ import com.tomgibara.geom.transform.Transform;
 
 public class Spiral extends Curve {
 
-	public static Spiral from(Point center, float startAngle, float finishAngle, float a, float b) {
+	public static Spiral from(Point center, double startAngle, double finishAngle, double a, double b) {
 		return new Spiral(center, startAngle, finishAngle, a, b);
 	}
 
 	private final Point center;
-	private final float startAngle;
-	private final float finishAngle;
-	private final float startRadius;
-	private final float finishRadius;
+	private final double startAngle;
+	private final double finishAngle;
+	private final double startRadius;
+	private final double finishRadius;
 
-	Spiral(Point center, float startAngle, float finishAngle, float startRadius, float finishRadius) {
+	Spiral(Point center, double startAngle, double finishAngle, double startRadius, double finishRadius) {
 		this.center = center;
 		this.startAngle = startAngle;
 		this.finishAngle = finishAngle;
@@ -24,19 +24,19 @@ public class Spiral extends Curve {
 		this.finishRadius = finishRadius;
 	}
 
-	public float getStartAngle() {
+	public double getStartAngle() {
 		return startAngle;
 	}
 
-	public float getFinishAngle() {
+	public double getFinishAngle() {
 		return finishAngle;
 	}
 
-	public float getStartRadius() {
+	public double getStartRadius() {
 		return startRadius;
 	}
 
-	public float getFinishRadius() {
+	public double getFinishRadius() {
 		return finishRadius;
 	}
 
@@ -46,16 +46,16 @@ public class Spiral extends Curve {
 	}
 
 	@Override
-	public Point pointAt(float p) {
-		return Transform.rotation(angle(p)).transform(new Vector(radius(p), 0f)).translate(center);
+	public Point pointAt(double p) {
+		return Transform.rotation(angle(p)).transform(new Vector(radius(p), 0.0)).translate(center);
 	}
 
 	@Override
-	public SplitCurvePath splitAt(float p) {
+	public SplitCurvePath splitAt(double p) {
 		p = clamp(p);
-		float angle = angle(p);
-		CurvePath s1 = new Spiral(center, startAngle, angle,       radius(0f), radius(p)  ).getPath();
-		CurvePath s2 = new Spiral(center, angle,      finishAngle, radius(p),  radius(1f) ).getPath();
+		double angle = angle(p);
+		CurvePath s1 = new Spiral(center, startAngle, angle,       radius(0.0), radius(p)  ).getPath();
+		CurvePath s2 = new Spiral(center, angle,      finishAngle, radius(p),  radius(1.0) ).getPath();
 		return new SplitCurvePath(s1, s2, false);
 	}
 
@@ -64,18 +64,18 @@ public class Spiral extends Curve {
 		return false;
 	}
 
-	private float angle(float p) {
+	private double angle(double p) {
 		return startAngle + (finishAngle - startAngle) * p;
 	}
 
-	private float radius(float p) {
+	private double radius(double p) {
 		if (startAngle == finishAngle) return startRadius;
 		return startRadius * (1 - p) + finishRadius * p;
 	}
 
 	@Override
 	//TODO consider a similar computeSplit?
-	protected Spiral computeSegment(float minP, float maxP) {
+	protected Spiral computeSegment(double minP, double maxP) {
 		return new Spiral(center, angle(minP), angle(maxP), radius(minP), radius(maxP));
 	}
 

@@ -6,12 +6,12 @@ public final class FloatRange {
 	public static final FloatRange UNIT_CLOSED = new FloatRange(0, false, 1, false);
 	public static final FloatRange UNIT_OPEN = new FloatRange(0, true, 1, true);
 
-	public final float min;
-	public final float max;
+	public final double min;
+	public final double max;
 	public final boolean minOpen;
 	public final boolean maxOpen;
 
-	public FloatRange(float min, boolean minOpen, float max, boolean maxOpen) {
+	public FloatRange(double min, boolean minOpen, double max, boolean maxOpen) {
 		if (min > max) throw new IllegalArgumentException();
 		this.min = min;
 		this.max = max;
@@ -19,11 +19,11 @@ public final class FloatRange {
 		this.maxOpen = maxOpen;
 	}
 
-	public FloatRange(float a, float b) {
+	public FloatRange(double a, double b) {
 		this(Math.min(a, b), false, Math.max(a, b), false);
 	}
 
-	private FloatRange(FloatRange that, float value) {
+	private FloatRange(FloatRange that, double value) {
 		if (value < that.min) {
 			min = value;
 			minOpen = false;
@@ -53,7 +53,7 @@ public final class FloatRange {
 		return min == max;
 	}
 
-	public boolean containsValue(float value) {
+	public boolean containsValue(double value) {
 		if (value <= min) return !minOpen && value == min;
 		if (value >= max) return !maxOpen && value == max;
 		return true;
@@ -77,7 +77,7 @@ public final class FloatRange {
 		return !isStrictlyLessThan(range) && !isStrictlyGreaterThan(range);
 	}
 
-	public float getSize() {
+	public double getSize() {
 		return max - min;
 	}
 
@@ -86,7 +86,7 @@ public final class FloatRange {
 		if (range.containsRange(this)) return this;
 		if (!this.intersects(range)) return null;
 
-		float min;
+		double min;
 		boolean minOpen;
 		if (this.min < range.min) {
 			min = range.min;
@@ -99,7 +99,7 @@ public final class FloatRange {
 			minOpen = this.minOpen || range.minOpen;
 		}
 
-		float max;
+		double max;
 		boolean maxOpen;
 		if (this.max > range.max) {
 			max = range.max;
@@ -117,11 +117,11 @@ public final class FloatRange {
 
 	//TODO add union
 
-	public FloatRange unionRange(float value) {
+	public FloatRange unionRange(double value) {
 		return containsValue(value) ? this : new FloatRange(this, value);
 	}
 
-	public float clampValue(float value) {
+	public double clampValue(double value) {
 		if (value < min) {
 			if (minOpen) throw new IllegalArgumentException("min open");
 			return min;
@@ -133,14 +133,14 @@ public final class FloatRange {
 		return value;
 	}
 
-	public FloatRange translate(float shift) {
+	public FloatRange translate(double shift) {
 		//TODO should use private cons
-		return shift == 0f ? this : new FloatRange(min + shift, minOpen, max + shift, maxOpen);
+		return shift == 0.0 ? this : new FloatRange(min + shift, minOpen, max + shift, maxOpen);
 	}
 
 	@Override
 	public int hashCode() {
-		int h = Float.floatToIntBits(min) + 31 * Float.floatToIntBits(max);
+		int h = Double.hashCode(min) + 31 * Double.hashCode(max);
 		if (minOpen) h += 0x1b0a6998;
 		if (maxOpen) h += 0x09562e01;
 		return h;
@@ -149,9 +149,8 @@ public final class FloatRange {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof FloatRange)) return false;
-		FloatRange that = (FloatRange) obj;
-		if (this.minOpen != that.minOpen) return false;
+		if (!(obj instanceof FloatRange that)) return false;
+        if (this.minOpen != that.minOpen) return false;
 		if (this.maxOpen != that.maxOpen) return false;
 		if (this.min != that.min) return false;
 		if (this.max != that.max) return false;

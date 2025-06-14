@@ -6,39 +6,39 @@ public final class Offset {
 
 	public static final Offset IDENTITY = new Offset();
 
-	public static Offset offset(float toMinX, float toMaxX, float toMinY, float toMaxY) {
-		return toMinX == 0f && toMaxX == 0f && toMinY == 0f && toMaxY == 0f ?
+	public static Offset offset(double toMinX, double toMaxX, double toMinY, double toMaxY) {
+		return toMinX == 0.0 && toMaxX == 0.0 && toMinY == 0.0 && toMaxY == 0.0 ?
 				IDENTITY : new Offset(toMinX, toMaxX, toMinY, toMaxY);
 	}
 
-	public static Offset translation(float x, float y) {
-		return x == 0f && y == 0f ?
+	public static Offset translation(double x, double y) {
+		return x == 0.0 && y == 0.0 ?
 				IDENTITY : new Offset(x, y);
 	}
 
-	public static Offset uniform(float offset) {
-		return offset == 0f ?
+	public static Offset uniform(double offset) {
+		return offset == 0.0 ?
 				IDENTITY: new Offset(offset);
 	}
 
-	public static Offset symmetric(float offsetX, float offsetY) {
-		return offsetX == 0f && offsetY == 0f ?
+	public static Offset symmetric(double offsetX, double offsetY) {
+		return offsetX == 0.0 && offsetY == 0.0 ?
 				IDENTITY : new Offset(offsetX, -offsetX, offsetY, -offsetY);
 	}
 
-	public final float toMinX;
-	public final float toMaxX;
-	public final float toMinY;
-	public final float toMaxY;
+	public final double toMinX;
+	public final double toMaxX;
+	public final double toMinY;
+	public final double toMaxY;
 
 	private Offset() {
-		toMinX = 0f;
-		toMaxX = 0f;
-		toMinY = 0f;
-		toMaxY = 0f;
+		toMinX = 0.0;
+		toMaxX = 0.0;
+		toMinY = 0.0;
+		toMaxY = 0.0;
 	}
 
-	private Offset(float offset) {
+	private Offset(double offset) {
 		this.toMinX =  offset;
 		this.toMaxX = -offset;
 		this.toMinY =  offset;
@@ -46,14 +46,14 @@ public final class Offset {
 	}
 
 	// used by vector
-	private Offset(float x, float y) {
+	private Offset(double x, double y) {
 		toMinX = x;
 		toMaxX = x;
 		toMinY = y;
 		toMaxY = y;
 	}
 
-	private Offset(float toMinX, float toMaxX, float toMinY, float toMaxY) {
+	private Offset(double toMinX, double toMaxX, double toMinY, double toMaxY) {
 		this.toMinX = toMinX;
 		this.toMaxX = toMaxX;
 		this.toMinY = toMinY;
@@ -88,18 +88,17 @@ public final class Offset {
 	@Override
 	public int hashCode() {
 		return
-				      Float.floatToIntBits(toMinX) +
-				(31 * Float.floatToIntBits(toMaxX) +
-				(31 * Float.floatToIntBits(toMinY) +
-				(31 * Float.floatToIntBits(toMaxY))));
+				      Double.hashCode(toMinX) +
+				(31 * Double.hashCode((toMaxX)) +
+				(31 * Double.hashCode((toMinY)) +
+				(31 * Double.hashCode((toMaxY)))));
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof Offset)) return false;
-		Offset that = (Offset) obj;
-		if (this.toMinX != that.toMinX) return false;
+		if (!(obj instanceof Offset that)) return false;
+        if (this.toMinX != that.toMinX) return false;
 		if (this.toMaxX != that.toMaxX) return false;
 		if (this.toMinY != that.toMinY) return false;
 		if (this.toMaxY != that.toMaxY) return false;

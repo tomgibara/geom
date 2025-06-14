@@ -7,6 +7,7 @@
   </parent>
   <artifactId>geom-all</artifactId>
   <name>Complete geometry library</name>
+  <packaging>pom</packaging>
   <dependencies>
     <dependency>
       <groupId>com.tomgibara.geom</groupId>

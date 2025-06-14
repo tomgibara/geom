@@ -44,7 +44,7 @@ public class Parameterizations {
 		return byLength;
 	}
 
-	public Path.Location locateAtLength(float p) {
+	public Path.Location locateAtLength(double p) {
 		return byLength.locationAt(p);
 	}
 
@@ -52,7 +52,7 @@ public class Parameterizations {
 
 		private final boolean byLength;
 		private final Parameterization[] zs;
-		private final float[] tree;
+		private final double[] tree;
 
 		public SeqParam(List<? extends Path> paths, boolean byLength) {
 			Parameterization[] zs = new Parameterization[paths.size()];
@@ -62,17 +62,17 @@ public class Parameterizations {
 			}
 			this.byLength = byLength;
 			int treeLength = Parameterizations.this.treeLength;
-			float[] tree = new float[treeLength];
+			double[] tree = new double[treeLength];
 			int pwrOf2 = Integer.highestOneBit(treeLength);
 			int j = 0;
 			//TODO could reorganize algorithm for intrinsic case to avoid summing values
 			for (int s = pwrOf2 - 1, limit = treeLength; s >= 0 ; limit = s, s = (s+1)/2 - 1) {
 				for (int i = s; i < limit; i++) {
 					int offset = limit + 2 * (i - s);
-					float value;
+					double value;
 					if (offset >= treeLength) {
 						Parameterization z = zs[j++];
-						value = byLength ? z.getPath().getLength() : 1f / zs.length;
+						value = byLength ? z.getPath().getLength() : 1.0 / zs.length;
 					} else {
 						value = tree[offset] + tree[offset + 1];
 					}
@@ -89,22 +89,22 @@ public class Parameterizations {
 		}
 
 		@Override
-		public Point pointAt(float p) {
+		public Point pointAt(double p) {
 			return zAt(p).getPoint();
 		}
 
 		@Override
-		public Vector tangentAt(float p) {
+		public Vector tangentAt(double p) {
 			return zAt(p).getTangent();
 		}
 
 		@Override
-		public PointPath pointTangentAt(float p) {
+		public PointPath pointTangentAt(double p) {
 			return zAt(p).getPointTangent();
 		}
 
 		@Override
-		public SplitPath splitAt(float p) {
+		public SplitPath splitAt(double p) {
 			Z zee = zAt(p);
 			Parameterization z = zee.z;
 			SplitPath split = z.splitAt(zee.p);
@@ -132,31 +132,31 @@ public class Parameterizations {
 		}
 
 		// only called on intrinsic instance
-		float lengthAt(float p) {
+		double lengthAt(double p) {
 			Z z = zAt(p);
 			return other().preSum(z.index) + z.getLength();
 		}
 
 		// only called on length instance
 		//TODO this can be simplified now
-		float intrinsicAt(float p) {
+		double intrinsicAt(double p) {
 			Z z = zAt(p);
 			return other().preSum(z.index) + z.getIntrinsic();
 		}
 
-		Path.Location locationAt(float p) {
+		Path.Location locationAt(double p) {
 			return zAt(p).getLocation();
 		}
 
 		@Override
-		public float parameterNearest(Point pt) {
-			float length = new Locator(path).getNearestLengthAlongPath(pt);
+		public double parameterNearest(Point pt) {
+			double length = new Locator(path).getNearestLengthAlongPath(pt);
 			return byLength ? length : other().intrinsicAt(length);
 		}
 
 		@Override
 		public Path.Location location() {
-			return new Path.Location(this, 0f);
+			return new Path.Location(this, 0.0);
 		}
 
 		@Override
@@ -166,11 +166,11 @@ public class Parameterizations {
 			Context context = Context.currentContext();
 			// possible corner at start of closed path
 			if (path.isClosed()) {
-				Vector v1 = zs[zs.length - 1].tangentAt(Float.MAX_VALUE);
-				Vector v2 = zs[0].tangentAt(0f);
-				if (context.isCorner(v1, v2)) list.add(new Path.Corner(this, 0f, path.getStart(), v1, v2));
+				Vector v1 = zs[zs.length - 1].tangentAt(Double.MAX_VALUE);
+				Vector v2 = zs[0].tangentAt(0.0);
+				if (context.isCorner(v1, v2)) list.add(new Path.Corner(this, 0.0, path.getStart(), v1, v2));
 			}
-			float offset = 0f;
+			double offset = 0.0;
 			Parameterization z1 = zs[0];
 			for (int i = 0; i < zs.length; i++) {
 				// z may contain corners
@@ -180,10 +180,13 @@ public class Parameterizations {
 				}
 				if (i < zs.length - 1) {
 					Parameterization z2 = zs[i + 1];
-					float dist = byLength ? z1.getPath().getLength() : 1f;
+					double dist = byLength ? z1.getPath().getLength() : 1.0;
 					offset += dist;
 					Vector v1 = z1.tangentAt(dist);
-					Vector v2 = z2.tangentAt(0f);
+					if (v1.isZero()) {
+						throw new IllegalStateException();
+					}
+					Vector v2 = z2.tangentAt(0.0);
 					Point pt = z2.getPath().getStart();
 					if (context.isCorner(v1, v2)) list.add(new Path.Corner(this, offset, pt, v1, v2));
 					z1 = z2;
@@ -193,11 +196,11 @@ public class Parameterizations {
 		}
 
 		@Override
-		public Path segment(float minP, float maxP) {
-			if (minP <= 0f) minP = 0f;
-			if (maxP >= 1f) maxP = 1f;
+		public Path segment(double minP, double maxP) {
+			if (minP <= 0.0) minP = 0.0;
+			if (maxP >= 1.0) maxP = 1.0;
 			if (minP > maxP) throw new IllegalArgumentException("minP exceeds maxP");
-			if (minP == 0f && maxP == 1f) return path;
+			if (minP == 0.0 && maxP == 1.0) return path;
 			Z minZ = zAt(minP);
 			Z maxZ = zAt(maxP);
 			if (minZ.z == maxZ.z) return minZ.z.segment(minZ.p, maxZ.p);
@@ -205,20 +208,20 @@ public class Parameterizations {
 			Builder builder = SequencePath.builder().withPolicy(Policy.IGNORE);
 			for (int i = minZ.index; i <= maxZ.index; i++) {
 				if (i == minZ.index) {
-					if (minZ.p == 0f) {
+					if (minZ.p == 0.0) {
 						builder.addPath(minZ.z.getPath());
-					} else if (minZ.p == 1f) {
+					} else if (minZ.p == 1.0) {
 						/* don't add zero length path */
 					} else {
-						builder.addPath(minZ.z.segment(minZ.p, 1f));
+						builder.addPath(minZ.z.segment(minZ.p, 1.0));
 					}
 				} else if (i == maxZ.index) {
-					if (maxZ.p == 1f) {
+					if (maxZ.p == 1.0) {
 						builder.addPath(maxZ.z.getPath());
-					} else if (maxZ.p == 0f) {
+					} else if (maxZ.p == 0.0) {
 						/* don't add zero length path */
 					} else {
-						builder.addPath(maxZ.z.segment(0f, maxZ.p));
+						builder.addPath(maxZ.z.segment(0.0, maxZ.p));
 					}
 				} else {
 					builder.addPath(zs[i].getPath());
@@ -235,7 +238,7 @@ public class Parameterizations {
 			return byLength ? Parameterizations.this.byIntrinsic : Parameterizations.this.byLength;
 		}
 
-		private Z zAt(float p) {
+		private Z zAt(double p) {
 			if (p <= 0 || treeLength == 1) return new Z(zs, 0, p);
 			int length = zs.length;
 			if (p >= tree[0]) return new Z(zs, length - 1, p);
@@ -255,12 +258,12 @@ public class Parameterizations {
 			}
 		}
 
-		private float preSum(int zi) {
-			if (zi == 0) return 0f;
+		private double preSum(int zi) {
+			if (zi == 0) return 0.0;
 			int length = zs.length;
 			int i = zi >= length - stragglers ? zi - length + stragglers : zi + stragglers;
 			i += leafOffset;
-			float s = 0;
+			double s = 0;
 			while (i > 0) {
 				if ((i & 1) == 1) {
 					s -= tree[i    ];
@@ -285,7 +288,7 @@ public class Parameterizations {
 		}
 
 		@Override
-		public float lengthAt(float p) {
+		public double lengthAt(double p) {
 			return super.lengthAt(p);
 		}
 
@@ -298,7 +301,7 @@ public class Parameterizations {
 		}
 
 		@Override
-		public float intrinsicAt(float p) {
+		public double intrinsicAt(double p) {
 			return super.intrinsicAt(p);
 		}
 
@@ -308,9 +311,9 @@ public class Parameterizations {
 
 		final int index;
 		final Parameterization z;
-		final float p;
+		final double p;
 
-		Z(Parameterization[] zs, int index, float p) {
+		Z(Parameterization[] zs, int index, double p) {
 			this.index = index;
 			this.z = zs[index];
 			this.p = p;
@@ -332,11 +335,11 @@ public class Parameterizations {
 			return new Path.Location(z, p);
 		}
 
-		float getLength() {
+		double getLength() {
 			return ((Parameterization.ByIntrinsic) z).lengthAt(p);
 		}
 
-		float getIntrinsic() {
+		double getIntrinsic() {
 			return ((Parameterization.ByLength) z).intrinsicAt(p);
 		}
 

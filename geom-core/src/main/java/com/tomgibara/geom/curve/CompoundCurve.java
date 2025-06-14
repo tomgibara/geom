@@ -34,7 +34,7 @@ public final class CompoundCurve extends Curve {
 	}
 
 	@Override
-	public Point pointAt(float t) {
+	public Point pointAt(double t) {
 		Vector v = offsetPath.byIntrinsic().pointAt(t).vectorFromOrigin();
 		switch (construction) {
 		case ORTHOGONAL:
@@ -51,7 +51,7 @@ public final class CompoundCurve extends Curve {
 	}
 
 	@Override
-	public SplitCurvePath splitAt(float p) {
+	public SplitCurvePath splitAt(double p) {
 		SplitCurvePath mainSplit = mainCurve.splitAt(p);
 		SplitPath offsetSplit = offsetPath.byIntrinsic().splitAt(p);
 		CompoundCurve firstCurve = new CompoundCurve(mainSplit.getFirstPath().getCurve(), offsetSplit.getFirstPath(), construction);
@@ -59,7 +59,7 @@ public final class CompoundCurve extends Curve {
 		return new SplitCurvePath(firstCurve.getPath(), secondCurve.getPath(), getPath().isClosed());
 	}
 
-	private Vector normalAt(float t) {
+	private Vector normalAt(double t) {
 		return mainCurve.getDerivative().pointAt(t).vectorFromOrigin().normalized().rotateThroughRightAngles(1);
 	}
 

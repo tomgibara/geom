@@ -6,7 +6,7 @@ import com.tomgibara.geom.transform.Transform;
 
 public final class Point implements Geometric {
 
-	public static Point ORIGIN = new Point(0f, 0f);
+	public static Point ORIGIN = new Point(0.0, 0.0);
 
 	public static class Util {
 
@@ -14,16 +14,16 @@ public final class Point implements Geometric {
 			return midpoint(pt1.x, pt2.y, pt2.x, pt2.y);
 		}
 
-		public static Point midpoint(float x1, float y1, float x2, float y2) {
-			return new Point((x1 + x2) * 0.5f, (y1 + y2) * 0.5f);
+		public static Point midpoint(double x1, double y1, double x2, double y2) {
+			return new Point((x1 + x2) * 0.5, (y1 + y2) * 0.5);
 		}
 
-		public static Point interpolate(Point pt1, Point pt2, float t) {
+		public static Point interpolate(Point pt1, Point pt2, double t) {
 			return interpolate(pt1.x, pt1.y, pt2.x, pt2.y, t);
 		}
 
-		public static Point interpolate(float x1, float y1, float x2, float y2, float t) {
-			float s = 1 - t;
+		public static Point interpolate(double x1, double y1, double x2, double y2, double t) {
+			double s = 1 - t;
 			return new Point(x1 * s + x2 * t, y1 * s + y2 * t);
 		}
 
@@ -33,7 +33,7 @@ public final class Point implements Geometric {
 
 		C addPoint(Point pt);
 
-		C addPoint(float x, float y);
+		C addPoint(double x, double y);
 
 	}
 
@@ -42,7 +42,7 @@ public final class Point implements Geometric {
 		private static final long serialVersionUID = -3708280469741672132L;
 
 		@Override
-		public List addPoint(float x, float y) {
+		public List addPoint(double x, double y) {
 			add(new Point(x, y));
 			return this;
 		}
@@ -55,16 +55,16 @@ public final class Point implements Geometric {
 
 	}
 
-	public final float x;
-	public final float y;
+	public final double x;
+	public final double y;
 
-	public Point(float x, float y) {
+	public Point(double x, double y) {
 		this.x = x;
 		this.y = y;
 	}
 
 	public boolean isOrigin() {
-		return x == 0f && y == 0f;
+		return x == 0.0 && y == 0.0;
 	}
 
 	public Vector vectorFrom(Point p) {
@@ -94,15 +94,14 @@ public final class Point implements Geometric {
 
 	@Override
 	public int hashCode() {
-		return Float.floatToIntBits(x) ^ 31 * Float.floatToIntBits(y);
+		return Double.hashCode(x) + 31 * Double.hashCode(y);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof Point)) return false;
-		Point that = (Point) obj;
-		return (this.x == that.x) && (this.y == that.y);
+		if (!(obj instanceof Point that)) return false;
+        return (this.x == that.x) && (this.y == that.y);
 	}
 
 	@Override

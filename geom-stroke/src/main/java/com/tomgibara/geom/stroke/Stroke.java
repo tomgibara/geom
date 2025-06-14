@@ -55,15 +55,15 @@ public class Stroke {
 		Iterator<FloatRange> pattern = dash.getPattern(path);
 		//TODO this is unpleasant - is there anything we can do about it?
 		if (pattern == Dash.NOWHERE) return Collections.emptyList();
-		float length = path.getLength();
+		double length = path.getLength();
 		if (pattern == Dash.EVERYWHERE) {
 			if (path.isClosed()) {
-				if (length == 0f) {
+				if (length == 0.0) {
 					Path polar = outline.outline(path.getStart());
 					if (!polar.isClosed()) {
 						//TODO this makes no sense - caps will have mismatched tangents
 						ByIntrinsic z = polar.byIntrinsic();
-						Path closer = cap.cap(z.pointTangentAt(1f), z.pointTangentAt(0f), path.getStart());
+						Path closer = cap.cap(z.pointTangentAt(1.0), z.pointTangentAt(0.0), path.getStart());
 						polar = new SplitPath(polar, closer, true);
 					}
 					return Collections.singletonList((Contour) new PathContour(polar));
@@ -76,10 +76,10 @@ public class Stroke {
 				return Collections.singletonList(strokeEverywhere(path, length, null));
 			}
 		} else {
-			if (length == 0f) {
+			if (length == 0.0) {
 				if (!pattern.hasNext()) return Collections.emptyList();
 				FloatRange range = pattern.next();
-				if (!range.containsValue(0f)) return Collections.emptyList();
+				if (!range.containsValue(0.0)) return Collections.emptyList();
 				return Collections.singletonList(strokeEverywhere(path, length, null));
 			} else {
 				List<Contour> list = new ArrayList<>();
@@ -98,7 +98,7 @@ public class Stroke {
 		}
 	}
 
-	private Contour strokeEverywhere(Path path, float pathLength, FloatRange segment) {
+	private Contour strokeEverywhere(Path path, double pathLength, FloatRange segment) {
 		if (pathLength < 0) pathLength = path.getLength();
 		//TODO outline needs splitting in half? or reversing?
 		Path outer;
@@ -115,11 +115,11 @@ public class Stroke {
 		ByIntrinsic outerZ = outer.byIntrinsic();
 		ByIntrinsic innerZ = inner.byIntrinsic();
 		Builder builder = SequencePath.builder().withPolicy(Policy.IGNORE);
-		if (pathLength > 0f) builder.addPath(outer);
-		Path capPath1 = cap.cap(outerZ.pointTangentAt(1f), innerZ.pointTangentAt(0f), z.pointAt(segment == null ? pathLength : segment.max));
+		if (pathLength > 0.0) builder.addPath(outer);
+		Path capPath1 = cap.cap(outerZ.pointTangentAt(1.0), innerZ.pointTangentAt(0.0), z.pointAt(segment == null ? pathLength : segment.max));
 		if (capPath1 != null) builder.addPath(capPath1);
-		if (pathLength > 0f) builder.addPath(inner);
-		Path capPath2 = cap.cap(innerZ.pointTangentAt(1f), outerZ.pointTangentAt(0f), z.pointAt(segment == null ? 0f : segment.min));
+		if (pathLength > 0.0) builder.addPath(inner);
+		Path capPath2 = cap.cap(innerZ.pointTangentAt(1.0), outerZ.pointTangentAt(0.0), z.pointAt(segment == null ? 0.0 : segment.min));
 		if (capPath2 != null) builder.addPath(capPath2);
 		return new PathContour(builder.closeAndBuild());
 	}

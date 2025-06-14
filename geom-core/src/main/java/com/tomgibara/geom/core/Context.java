@@ -85,8 +85,8 @@ public class Context {
 		t.printStackTrace();
 	}
 
-	private static boolean isContinuous(float tolerance, Point pt1, Point pt2) {
-		return tolerance == 0f ? pt1.equals(pt2) : Norm.L2.powDistanceBetween(pt1, pt2) <= tolerance;
+	private static boolean isContinuous(double tolerance, Point pt1, Point pt2) {
+		return tolerance == 0.0 ? pt1.equals(pt2) : Norm.L2.powDistanceBetween(pt1, pt2) <= tolerance;
 	}
 
 	private final Context parent;
@@ -145,8 +145,8 @@ public class Context {
 		Point start = path.getStart();
 		Point finish = path.getFinish();
 		ByIntrinsic intrinsic = path.byIntrinsic();
-		if (start.equals(finish)) return intrinsic.pointTangentAt(0f);
-		Point halfway = intrinsic.pointAt(0.5f);
+		if (start.equals(finish)) return intrinsic.pointTangentAt(0.0);
+		Point halfway = intrinsic.pointAt(0.5);
 		if (isApproxLinear(start, finish, halfway)) return LineSegment.fromPoints(start, finish).getPath();
 		return path;
 	}
@@ -156,25 +156,25 @@ public class Context {
 	}
 
 	public boolean isApproxLinear(Point start, Point finish, Point halfway) {
-		float length = Norm.L2.powDistanceBetween(start, finish);
+		double length = Norm.L2.powDistanceBetween(start, finish);
 		if (length < tolerances.powShortestNonLinearCurve) return true;
 		Point midpoint = Point.Util.midpoint(start, finish);
-		float dist = Norm.L2.powDistanceBetween(midpoint, halfway);
+		double dist = Norm.L2.powDistanceBetween(midpoint, halfway);
 		return dist / length < tolerances.powLeastNonLinearDeviation;
 	}
 
 	//TODO should change to isSmooth?
 	public boolean isCorner(Vector v1, Vector v2) {
-		float tolerance = tolerances.getCornerTolerance();
-		if (tolerance == 0f) return !v1.equals(v2);
-		float dot = v1.dot(v2);
-		return Math.abs(1f - dot) > tolerance;
+		double tolerance = tolerances.getCornerTolerance();
+		if (tolerance == 0.0) return !v1.equals(v2);
+		double dot = v1.dot(v2);
+		return Math.abs(1.0 - dot) > tolerance;
 	}
 
 	private boolean testApproxLinear(Path path) {
 		Point start = path.getStart();
 		Point finish = path.getFinish();
-		Point halfway = path.byIntrinsic().pointAt(0.5f);
+		Point halfway = path.byIntrinsic().pointAt(0.5);
 		return isApproxLinear(start, finish, halfway);
 	}
 

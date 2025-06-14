@@ -5,106 +5,106 @@ import com.tomgibara.geom.transform.Transformable;
 
 public final class Vector implements Transformable {
 
-	public static Vector ZERO = new Vector(0f, 0f, 0f);
-	public static Vector UNIT_X = new Vector(1f, 0f, 1f);
-	public static Vector UNIT_Y = new Vector(0f, 1f, 1f);
-	public static Vector UNIT_NEG_X = new Vector(-1f, 0f, 1f);
-	public static Vector UNIT_NEG_Y = new Vector(0f, -1f, 1f);
+	public static Vector ZERO = new Vector(0.0, 0.0, 0.0);
+	public static Vector UNIT_X = new Vector(1.0, 0.0, 1.0);
+	public static Vector UNIT_Y = new Vector(0.0, 1.0, 1.0);
+	public static Vector UNIT_NEG_X = new Vector(-1.0, 0.0, 1.0);
+	public static Vector UNIT_NEG_Y = new Vector(0.0, -1.0, 1.0);
 
-	public final float x;
-	public final float y;
-	private float magnitude;
+	public final double x;
+	public final double y;
+	private double magnitude;
 
 	//TODO make constructors statics?
 
 	public Vector(Point from, Point to) {
 		this.x = to.x - from.x;
 		this.y = to.y - from.y;
-		magnitude = -1f;
+		magnitude = -1.0;
 	}
 
-	public Vector(float x, float y) {
+	public Vector(double x, double y) {
 		this.x = x;
 		this.y = y;
-		magnitude = -1f;
+		magnitude = -1.0;
 	}
 
-	public Vector(float angle) {
-		x = (float) Math.cos(angle);
-		y = (float) Math.sin(angle);
-		magnitude = 1f;
+	public Vector(double angle) {
+		x = Math.cos(angle);
+		y = Math.sin(angle);
+		magnitude = 1.0;
 	}
 
-	private Vector(float x, float y, float magnitude) {
+	private Vector(double x, double y, double magnitude) {
 		this.x = x;
 		this.y = y;
 		this.magnitude = magnitude;
 	}
 
 	public boolean isZero() {
-		return x == 0f && y == 0f;
+		return x == 0.0 && y == 0.0;
 	}
 
 	public boolean isUnit() {
-		return getMagnitudeSqr() == 1f;
+		return getMagnitudeSqr() == 1.0;
 	}
 
 	public boolean isRectilinear() {
-		return x == 0f || y == 0f;
+		return x == 0.0 || y == 0.0;
 	}
 
 	public boolean isParallelToXAxis() {
-		return y == 0f;
+		return y == 0.0;
 	}
 
 	public boolean isParallelToYAxis() {
-		return x == 0f;
+		return x == 0.0;
 	}
 
 	// from x axis
-	public float getAngle() {
-		return (float) Math.atan2(y, x);
+	public double getAngle() {
+		return Math.atan2(y, x);
 	}
 
-	public float angleFrom(Vector v) {
+	public double angleFrom(Vector v) {
 		return v.angleTo(this);
 	}
 
-	public float angleTo(Vector v) {
-		float det = x * v.y - y * v.x;
-		float d = dot(v);
-		if (det == 0f) return d > 0f ? 0 : Angles.PI;
-		float c = d / (getMagnitude() * v.getMagnitude());
-		if (c > 1.0 || c < -1.0) return 0f; // guard against rounding errors pushing value over 1.0
-		return Math.signum(det) * (float) Math.acos(c);
+	public double angleTo(Vector v) {
+		double det = x * v.y - y * v.x;
+		double d = dot(v);
+		if (det == 0.0) return d > 0.0 ? 0 : Angles.PI;
+		double c = d / (getMagnitude() * v.getMagnitude());
+		if (c > 1.0 || c < -1.0) return 0.0; // guard against rounding errors pushing value over 1.0
+		return Math.signum(det) * Math.acos(c);
 	}
 
-	public Vector scaled(float s) {
-		if (s == 1f || isZero()) return this;
-		if (s == 0f) return ZERO;
-		return magnitude != -1f ? new Vector(x * s, y * s, magnitude * s) : new Vector(x * s, y * s);
+	public Vector scaled(double s) {
+		if (s == 1.0 || isZero()) return this;
+		if (s == 0.0) return ZERO;
+		return magnitude != -1.0 ? new Vector(x * s, y * s, magnitude * s) : new Vector(x * s, y * s);
 	}
 
 	public Vector negated() {
 		return isZero() ? this : new Vector(-x, -y);
 	}
 
-	public float getMagnitudeSqr() {
+	public double getMagnitudeSqr() {
 		return x * x + y * y;
 	}
 
-	public float getMagnitude() {
-		if (magnitude == -1f) {
-			if (x == 0f) {
-				if (y == 0f) {
-					magnitude = 0f;
+	public double getMagnitude() {
+		if (magnitude == -1.0) {
+			if (x == 0.0) {
+				if (y == 0.0) {
+					magnitude = 0.0;
 				} else {
 					magnitude = Math.abs(y);
 				}
 			} else if (y == 0) {
 				magnitude = Math.abs(x);
 			} else {
-				magnitude = (float) Math.sqrt(x * x + y * y);
+				magnitude = Math.sqrt(x * x + y * y);
 			}
 		}
 		return magnitude;
@@ -112,10 +112,10 @@ public final class Vector implements Transformable {
 
 	public Vector normalized() {
 		if (isZero() || isUnit()) return this;
-		float s = 1f / getMagnitude();
+		double s = 1.0 / getMagnitude();
 		// magnitude may underflow or s may overflow
-		if (Float.isInfinite(s)) return ZERO;
-		return new Vector(x * s, y * s, 1f);
+		if (Double.isInfinite(s)) return ZERO;
+		return new Vector(x * s, y * s, 1.0);
 	}
 
 	public Vector strictlyNormalized() {
@@ -123,9 +123,9 @@ public final class Vector implements Transformable {
 		if (isZero()) {
 			throw new IllegalStateException("cannot normalize zero vector");
 		}
-		float s = 1f / getMagnitude();
-		if (Float.isInfinite(s)) throw new IllegalStateException("normalization failed on underflow");
-		return new Vector(x * s, y * s, 1f);
+		double s = 1.0 / getMagnitude();
+		if (Double.isInfinite(s)) throw new IllegalStateException("normalization failed on underflow");
+		return new Vector(x * s, y * s, 1.0);
 	}
 
 	public Vector add(Vector v) {
@@ -139,7 +139,7 @@ public final class Vector implements Transformable {
 		return new Vector(x - v.x, y - v.y);
 	}
 
-	public float dot(Vector vector) {
+	public double dot(Vector vector) {
 		if (vector == null) throw new IllegalArgumentException("null vector");
 		return x * vector.x + y * vector.y;
 	}
@@ -167,13 +167,13 @@ public final class Vector implements Transformable {
 	// needed in addition to transform optimization to preserve magnitude
 	public Vector rotateThroughRightAngles(int rightAngles) {
 		int a = rightAngles & 0x3;
-		switch (a) {
-		case 0 : return this;
-		case 1 : return new Vector(-y,  x, magnitude);
-		case 2 : return new Vector(-x, -y, magnitude);
-		case 3 : return new Vector( y, -x, magnitude);
-		default: throw new IllegalStateException();
-		}
+        return switch (a) {
+            case 0 -> this;
+            case 1 -> new Vector(-y,  x, magnitude);
+            case 2 -> new Vector(-x, -y, magnitude);
+            case 3 -> new Vector( y, -x, magnitude);
+            default -> throw new IllegalStateException();
+        };
 	}
 
 	public Vector apply(Transform t) {
@@ -183,15 +183,14 @@ public final class Vector implements Transformable {
 
 	@Override
 	public int hashCode() {
-		return Float.floatToIntBits(x) ^ 31 * Float.floatToIntBits(y);
+		return Double.hashCode(x) * 31 + Double.hashCode(y);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof Vector)) return false;
-		Vector that = (Vector) obj;
-		return (this.x == that.x) && (this.y == that.y);
+		if (!(obj instanceof Vector that)) return false;
+        return (this.x == that.x) && (this.y == that.y);
 	}
 
 	@Override

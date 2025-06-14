@@ -23,23 +23,10 @@ public class Winder {
 		//TODO should this be zero or one, what convention?
 		if (nearest.equals(pt)) return 1;
 		//TODO this is hacky - theoretically, line could clip back into the contour
-		LineSegment line = LineSegment.fromPoints(pt, nearest).scaleLength(1.001f);
+		LineSegment line = LineSegment.fromPoints(pt, nearest).scaleLength(1.001);
 		consumer.reset(line);
 		intersector.intersect(contour.getPath(), line.getPath());
 		return consumer.getWinding();
-	}
-
-	// TODO remove
-	public Point.List test(Contour contour, Point pt) {
-		if (contour == null) throw new IllegalArgumentException("null contour");
-		if (pt == null) throw new IllegalArgumentException("null pt");
-		Point.List list = new Point.List();
-		Rect bounds = contour.getBounds();
-		if (bounds.containsPoint(pt)) {
-			LineSegment line = LineSegment.fromPoints(pt, bounds.nearestPointTo(pt, true)).scaleLength(1.1f);
-			new Intersector(list).intersect(contour.getPath(), line.getPath());
-		}
-		return list;
 	}
 
 	private static class Consumer implements Point.Consumer<Void> {
@@ -50,13 +37,12 @@ public class Winder {
 		private static final int DEC_Y = 3;
 
 		private int direction;
-		private float value;
 
 		private int count;
 		private int winding;
 
-		private float startX;
-		private float startY;
+		private double startX;
+		private double startY;
 
 		void reset(LineSegment line) {
 			Point start = line.getStart();
@@ -76,7 +62,7 @@ public class Winder {
 		}
 
 		@Override
-		public Void addPoint(float x, float y) {
+		public Void addPoint(double x, double y) {
 			switch (count) {
 			case 0 :
 				startX = x;
@@ -88,24 +74,14 @@ public class Winder {
 				break;
 				default:
 					// TODO how to handle equality situations
-					final int delta;
-					switch (direction) {
-					case INC_X :
-						delta = y > startY ? 1 : -1;
-						break;
-					case DEC_X :
-						delta = y < startY ? 1 : -1;
-						break;
-					case INC_Y :
-						delta = x < startX ? 1 : -1;
-						break;
-					case DEC_Y :
-						delta = x > startX ? 1 : -1;
-						break;
-						default:
-							throw new UnsupportedOperationException();
-					}
-					winding += delta;
+					final int delta = switch (direction) {
+                        case INC_X -> y > startY ? 1 : -1;
+                        case DEC_X -> y < startY ? 1 : -1;
+                        case INC_Y -> x < startX ? 1 : -1;
+                        case DEC_Y -> x > startX ? 1 : -1;
+                        default -> throw new UnsupportedOperationException();
+                    };
+                    winding += delta;
 					count = 0;
 			}
 			return null;

@@ -27,7 +27,7 @@ public class PolygonalPath implements Path {
 		private Builder() { }
 
 		@Override
-		public Builder addPoint(float x, float y) {
+		public Builder addPoint(double x, double y) {
 			return addPoint(new Point(x, y));
 		}
 
@@ -74,7 +74,7 @@ public class PolygonalPath implements Path {
 
 		public PolygonalPath build() {
 			checkNotTrivial();
-			return new PolygonalPath( (Point[]) points.toArray(new Point[points.size()]), closed, rectilinear );
+			return new PolygonalPath( points.toArray(new Point[points.size()]), closed, rectilinear );
 		}
 
 //		public Path buildPossiblePointPath() {
@@ -113,7 +113,7 @@ public class PolygonalPath implements Path {
 	private final List<Point> publicPoints;
 	private Rect bounds = null;
 	private List<LineSegment> segments = null;
-	private float length = -1;
+	private double length = -1;
 	private Parameterizations params = null;
 	private CompositePath cornerSplit = null;
 
@@ -143,7 +143,7 @@ public class PolygonalPath implements Path {
 	}
 
 	@Override
-	public float getLength() {
+	public double getLength() {
 		return length < 0 ? length = computeLength() : length;
 	}
 
@@ -278,19 +278,19 @@ public class PolygonalPath implements Path {
 		return consumer.getBounds();
 	}
 
-	private float computeLength() {
-		float length = 0f;
+	private double computeLength() {
+		double length = 0.0;
 		List<LineSegment> segments = getSegments();
 		int size = segments.size();
-		for (int i = 0; i < size; i++) {
-			length += segments.get(i).getPath().getLength();
-		}
+        for (LineSegment segment : segments) {
+            length += segment.getPath().getLength();
+        }
 		return length;
 	}
 
 	private class SegmentList extends AbstractList<LineSegment> {
 
-		private LineSegment[] segments = new LineSegment[points.length - 1];
+		private final LineSegment[] segments = new LineSegment[points.length - 1];
 
 		@Override
 		public LineSegment get(int index) {
@@ -313,7 +313,7 @@ public class PolygonalPath implements Path {
 	private Parameterizations getParams() {
 		if (params == null) {
 			List<Path> adapted = new AbstractList<Path>() {
-				List<LineSegment> segments = getSegments();
+				final List<LineSegment> segments = getSegments();
 				@Override public Path get(int index) { return segments.get(index).getPath(); }
 				@Override public int size() { return segments.size(); }
 			};

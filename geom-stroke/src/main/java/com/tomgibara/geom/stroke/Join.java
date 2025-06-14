@@ -59,11 +59,11 @@ public interface Join {
 
 			//TODO shouldn't assume v1 & v2 are the same length
 			// ideally want to use an ellipse
-			float radius = v1.getMagnitude();
-			float a1 = v1.getAngle();
+			double radius = v1.getMagnitude();
+			double a1 = v1.getAngle();
 
-			//float a2 = a1 + v1.angleTo(v2);
-			float a2 = v2.getAngle();
+			//double a2 = a1 + v1.angleTo(v2);
+			double a2 = v2.getAngle();
 			if (side1 > 0) {
 				if (a2 < a1) a2 += Angles.TWO_PI;
 			} else {

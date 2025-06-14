@@ -85,7 +85,7 @@ public class InteractiveGeometry extends JFrame {
 
 	static final FloatMapping BULGE = new FloatMapping() {
 
-		private final float scale = 60f;
+		private final double scale = 60.0;
 		private final FloatRange domain = FloatRange.UNIT_CLOSED;
 		private final FloatRange range = new FloatRange(0, scale);
 
@@ -101,8 +101,8 @@ public class InteractiveGeometry extends JFrame {
 			throw new UnsupportedOperationException();
 		}
 
-		public float map(float x) {
-			return scale * (float) Math.sin(x * Angles.PI);
+		public double map(double x) {
+			return scale * (double) Math.sin(x * Angles.PI);
 		}
 
 		@Override
@@ -129,7 +129,7 @@ public class InteractiveGeometry extends JFrame {
 	int selectedShape = -1;
 	int selectedPt = -1;
 
-	private float gridSize = 10f;
+	private double gridSize = 10.0;
 	private boolean applyGrid = false;
 	private boolean showStart = false;
 	private boolean showBounds = false;
@@ -150,7 +150,7 @@ public class InteractiveGeometry extends JFrame {
 
 	public InteractiveGeometry() {
 		super("Interactive Geometry");
-		Context.enter(Tolerances.current().builder().setShortestNonLinearCurve(20f).setLeastNonLinearDeviation(0.001f).build(), Context.Policy.LOG_MESSAGE);
+		Context.enter(Tolerances.current().builder().setShortestNonLinearCurve(20.0).setLeastNonLinearDeviation(0.001f).build(), Context.Policy.LOG_MESSAGE);
 		editor = new Editor();
 		buttons = new Buttons();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -160,18 +160,21 @@ public class InteractiveGeometry extends JFrame {
 		pack();
 		setVisible(true);
 
-		addLine();
-		addPointLine();
+//		addLine();
+//		addPointLine();
 //		addCubicBezier();
 //		addSexticBezier();
 //		addPolygonal();
 //		addSequence();
-		addRect();
+//		addRect();
 //		addCircularArc();
+//		addCircularArc2();
+//		addCircularArc3();
 //		addSpiral();
 //		addEllipticalArc();
+//		addEllipse();
 //		addBoundedDls();
-//		addOffsetCurve();
+		addOffsetCurve();
 	}
 
 	void addCubicBezier() {
@@ -218,6 +221,14 @@ public class InteractiveGeometry extends JFrame {
 
 	void addCircularArc() {
 		shapes.add(new MutableShape(ShapeType.ARC, null, new Point(300,200), new Point(400, 200), new Point(300, 130)));
+	}
+
+	void addCircularArc2() {
+		shapes.add(new MutableShape(ShapeType.ARC2, null, new Point(300,200), new Point(400, 200), new Point(300, 130)));
+	}
+
+	void addCircularArc3() {
+		shapes.add(new MutableShape(ShapeType.ARC3, null, new Point(300,200), new Point(400, 200)));
 	}
 
 	void addBoundedDls() {
@@ -387,7 +398,7 @@ public class InteractiveGeometry extends JFrame {
 				for (int j = 0; j < points.length; j++) {
 					Point pt = points[j];
 					g2.setColor(Color.BLACK);
-					g2.fillOval(Math.round(pt.x) - 15, Math.round(pt.y) - 15, 30, 30);
+					g2.fillOval((int) Math.round(pt.x) - 15, (int) Math.round(pt.y) - 15, 30, 30);
 					Color color;
 					if (i == selectedShape && j == selectedPt) {
 						color = Color.MAGENTA;
@@ -422,7 +433,7 @@ public class InteractiveGeometry extends JFrame {
 						number = true;
 					}
 					g2.setColor(color);
-					g2.fillOval(Math.round(pt.x) - 10, Math.round(pt.y) - 10, 20, 20);
+					g2.fillOval((int) Math.round(pt.x) - 10, (int) Math.round(pt.y) - 10, 20, 20);
 					g2.setColor(Color.BLACK);
 					String label = number ? Integer.toString(j) : "";
 					if (!label.isEmpty()) g2.drawString(label, Math.round(pt.x) - 5, Math.round(pt.y) + 8);
@@ -461,8 +472,8 @@ public class InteractiveGeometry extends JFrame {
 			g2.setFont(f.deriveFont(10f));
 			int count = 0;
 			for (Point pt : pts) {
-				g2.drawString(Integer.toString(++count), pt.x + 10, pt.y + 10);
-				g2.fillOval(Math.round(pt.x) - 5, Math.round(pt.y) - 5, 10, 10);
+				g2.drawString(Integer.toString(++count), (float) (pt.x + 10), (float) (pt.y + 10));
+				g2.fillOval((int) (Math.round(pt.x) - 5), (int) (Math.round(pt.y) - 5), 10, 10);
 			}
 			g2.setFont(f);
 		}
@@ -473,12 +484,12 @@ public class InteractiveGeometry extends JFrame {
 					Rect bounds = path.getBounds();
 					g2.setStroke(new BasicStroke(1f));
 					g2.setColor(Color.LIGHT_GRAY);
-					g2.draw(new Rectangle2D.Float(bounds.minX, bounds.minY, bounds.getWidth(), bounds.getHeight()));
+					g2.draw(new Rectangle2D.Double(bounds.minX, bounds.minY, bounds.getWidth(), bounds.getHeight()));
 				}
 				if (showStart) {
 					Point start = path.getStart();
 					g2.setColor(Color.GREEN);
-					g2.fill(new Ellipse2D.Float(start.x - 4, start.y - 4, 4, 4));
+					g2.fill(new Ellipse2D.Double(start.x - 4, start.y - 4, 4, 4));
 				}
 				if (inter != null) {
 					Point.List list = new Point.List();
@@ -490,7 +501,7 @@ public class InteractiveGeometry extends JFrame {
 
 					List<Path> paths = new ArrayList<>();
 					Path rem = path;
-					float gap = 10;
+					double gap = 10;
 					SplitPath split = null;
 					for (Point pt : list) {
 						split = rem.byLength().location().moveClosestTo(pt).split();
@@ -505,13 +516,13 @@ public class InteractiveGeometry extends JFrame {
 						Color color = Color.BLACK;
 						for (Path segment : paths) {
 							g2.setColor(color);
-							g2.setStroke(new BasicStroke(3f));
+							g2.setStroke(new BasicStroke(3.0f));
 							plot(segment, g2);
 							color = color == Color.BLACK ? Color.GRAY : Color.BLACK;
 						}
 						for (Point pt : list) {
 							g2.setColor(Color.RED);
-							g2.fillOval(Math.round(pt.x) - 5, Math.round(pt.y) - 5, 10, 10);
+							g2.fillOval((int) Math.round(pt.x) - 5, (int) Math.round(pt.y) - 5, 10, 10);
 						}
 					} else {
 						g2.setColor(Color.BLACK);
@@ -524,9 +535,9 @@ public class InteractiveGeometry extends JFrame {
 
 				if (showLengths) { // label with length
 					g2.setColor(Color.BLUE);
-					float length = path.getLength();
+					double length = path.getLength();
 					Point pt = new Vector(30,30).translate( path.getFinish() );
-					g2.drawString(String.format("%3.3f", length), pt.x, pt.y);
+					g2.drawString(String.format("%3.3f", length), (float) pt.x, (float) pt.y);
 				}
 
 				if (showTangents) {
@@ -535,10 +546,10 @@ public class InteractiveGeometry extends JFrame {
 					for (Location loc = path.byLength().location(); !loc.isAtFinish(); loc.moveBy(40)) {
 						LineSegment dls = loc.getPointTangent().getTangentAsSegment().scaleLength(20);
 						Point pt = dls.getStart();
-						g2.fill(new Ellipse2D.Float(pt.x - 2, pt.y - 2, 4, 4));
-						g2.draw(new Line2D.Float(pt.x, pt.y, dls.getFinish().x, dls.getFinish().y));
+						g2.fill(new Ellipse2D.Double(pt.x - 2, pt.y - 2, 4, 4));
+						g2.draw(new Line2D.Double(pt.x, pt.y, dls.getFinish().x, dls.getFinish().y));
 						Point e = dls.getFinish();
-						Path2D.Float tri = new Path2D.Float();
+						Path2D.Double tri = new Path2D.Double();
 						tri.moveTo(0, -4);
 						tri.lineTo(5,0);
 						tri.lineTo(0, 4);
@@ -553,30 +564,29 @@ public class InteractiveGeometry extends JFrame {
 				if (showHalfPoint) {
 					g2.setColor(Color.BLUE);
 					Parameterization param = path.byIntrinsic();
-					Location loc = param.location().moveTo(0.5f);
+					Location loc = param.location().moveTo(0.5);
 					LineSegment dls = loc.getPointTangent().getTangentAsSegment().scaleLength(40);
 					Point pt = dls.getStart();
-					g2.fill(new Ellipse2D.Float(pt.x - 3, pt.y - 3, 6, 6));
-					g2.draw(new Line2D.Float(pt.x, pt.y, dls.getFinish().x, dls.getFinish().y));
-					float length = loc.getLength();
-					g2.drawString(String.format("%3.3f", length), pt.x + 30, pt.y - 30);
+					g2.fill(new Ellipse2D.Double(pt.x - 3, pt.y - 3, 6, 6));
+					g2.draw(new Line2D.Double(pt.x, pt.y, dls.getFinish().x, dls.getFinish().y));
+					double length = loc.getLength();
+					g2.drawString(String.format("%3.3f", length), (float) (pt.x + 30), (float) (pt.y - 30));
 				}
 
 				if (showNearest && point != null) {
 					Point pt = path.byLength().location().moveClosestTo(point).getPoint();
 					g2.setColor(Color.DARK_GRAY);
-					g2.fillOval(Math.round(pt.x) - 10, Math.round(pt.y) - 10, 20, 20);
+					g2.fillOval((int) Math.round(pt.x) - 10, (int) Math.round(pt.y) - 10, 20, 20);
 					g2.setColor(Color.GREEN);
-					g2.fillOval(Math.round(pt.x) - 7, Math.round(pt.y) - 7, 14, 14);
+					g2.fillOval((int) Math.round(pt.x) - 7, (int) Math.round(pt.y) - 7, 14, 14);
 				}
 
 				if (path instanceof CurvePath) {
 					Object obj = ((CurvePath) path).getCurve();
-					if (obj instanceof EllipticalArc) {
+					if (obj instanceof EllipticalArc arc) {
 						g2.setColor(Color.PINK);
 						g2.setStroke(new BasicStroke(1f));
-						EllipticalArc arc = (EllipticalArc) obj;
-						Ellipse geom = arc.getGeom();
+                        Ellipse geom = arc.getGeom();
 						Point center = geom.getCenter();
 						Path cen = Ellipse.fromRadius(center, 5).completeArc().getPath();
 						plot(cen, g2);
@@ -612,26 +622,26 @@ public class InteractiveGeometry extends JFrame {
 				for (Location location = path.byIntrinsic().location(); !location.isAtFinish(); location.moveToNextCorner()) {
 					if (location.isAtCorner()) {
 						Point cp = location.getPoint();
-						float r = 20f;
+						double r = 20.0;
 						Corner corner = location.getCorner();
 						Vector t1 = corner.getStartTangent();
 						Vector t2 = corner.getFinishTangent();
-						float alpha = t1.getAngle();
-						float delta = t1.angleTo(t2);
-						float alphaD = Angles.toDegrees( alpha );
-						float deltaD = Angles.toDegrees( delta );
+						double alpha = t1.getAngle();
+						double delta = t1.angleTo(t2);
+						double alphaD = Angles.toDegrees( alpha );
+						double deltaD = Angles.toDegrees( delta );
 						g2.setColor(tc);
-						g2.draw(new Line2D.Float(cp.x, cp.y, cp.x + t1.x * r * 1.2f, cp.y + t1.y * r * 1.2f));
-						g2.draw(new Line2D.Float(cp.x, cp.y, cp.x + t2.x * r * 1.2f, cp.y + t2.y * r * 1.2f));
+						g2.draw(new Line2D.Double(cp.x, cp.y, cp.x + t1.x * r * 1.2f, cp.y + t1.y * r * 1.2f));
+						g2.draw(new Line2D.Double(cp.x, cp.y, cp.x + t2.x * r * 1.2f, cp.y + t2.y * r * 1.2f));
 						g2.setColor(sc);
-						g2.fill( new Arc2D.Float(cp.x - r, cp.y - r, 2 * r, 2 * r, -alphaD, -deltaD, Arc2D.PIE) );
+						g2.fill( new Arc2D.Double(cp.x - r, cp.y - r, 2 * r, 2 * r, -alphaD, -deltaD, Arc2D.PIE) );
 					}
 				}
 				CompositePath seq = path.splitAtCorners();
 				List<? extends Path> paths = seq.getSubpaths();
 				for (Path pth : paths) {
-					float length = pth.getLength();
-					float len = Math.min(50f, length/3f);
+					double length = pth.getLength();
+					double len = Math.min(50.0, length/3.0);
 					g2.setColor(uc);
 					plotSimple(pth.byLength().splitAt(len).getFirstPath(), g2);
 					plotSimple(pth.byLength().splitAt(length - len).getLastPath(), g2);
@@ -642,7 +652,7 @@ public class InteractiveGeometry extends JFrame {
 		}
 
 		private void plotSimple(Path path, Graphics2D g2) {
-			if (path.getLength() == 0f) return;
+			if (path.getLength() == 0.0) return;
 			plotSimple(AWTUtil.toPath2D(path), path.isClosed(), g2, new Color(0xe0e0e0));
 		}
 
@@ -677,12 +687,12 @@ public class InteractiveGeometry extends JFrame {
 			Point pt = pointFromEvent(e);
 			int closestShape = -1;
 			int closestPt = -1;
-			float leastDist = Float.MAX_VALUE;
+			double leastDist = Double.MAX_VALUE;
 			for (int i = 0; i < shapes.size(); i++) {
 				Point[] points = shapes.get(i).points;
 				for (int j = 0; j < points.length; j++) {
 					Point point = points[j];
-					float dist = Norm.L2.distanceBetween(pt, point);
+					double dist = Norm.L2.distanceBetween(pt, point);
 					if (dist < leastDist) {
 						leastDist = dist;
 						closestShape = i;
@@ -717,11 +727,11 @@ public class InteractiveGeometry extends JFrame {
 		}
 
 		private Point pointFromEvent(MouseEvent e) {
-			float x = e.getX();
-			float y = e.getY();
+			double x = e.getX();
+			double y = e.getY();
 			if (applyGrid) {
-				x = ((float) Math.floor(x / gridSize)) * gridSize;
-				y = ((float) Math.floor(y / gridSize)) * gridSize;
+				x = Math.floor(x / gridSize) * gridSize;
+				y = Math.floor(y / gridSize) * gridSize;
 			}
 			return new Point(x, y);
 		}
@@ -738,6 +748,8 @@ public class InteractiveGeometry extends JFrame {
 		ELLIPTICAL_ARC,
 		ELLIPTICAL,
 		ARC,
+		ARC2,
+		ARC3,
 		BOUNDED_DLS,
 		OFFSET_BEZIER
 	}
@@ -770,48 +782,44 @@ public class InteractiveGeometry extends JFrame {
 			case OFFSET_BEZIER: {
 				BezierCurve curve1 = BezierCurve.fromPoints(Arrays.asList(points).subList(1, points.length));
 				BezierCurve curve2 = (BezierCurve) curve1.getPath().getReverse().getCurve();
-				float radius = Norm.L2.distanceBetween(points[0], points[1]);
-				OffsetCurve offset1 = OffsetCurve.from(curve1.getPath(), FloatMapping.Util.linear(FloatRange.UNIT_CLOSED, radius, 0f));
-				OffsetCurve offset2 = OffsetCurve.from(curve2.getPath(), FloatMapping.Util.linear(FloatRange.UNIT_CLOSED, 0f, radius));
+				double radius = Norm.L2.distanceBetween(points[0], points[1]);
+				OffsetCurve offset1 = OffsetCurve.from(curve1.getPath(), FloatMapping.Util.linear(FloatRange.UNIT_CLOSED, radius, 0.0));
+				OffsetCurve offset2 = OffsetCurve.from(curve2.getPath(), FloatMapping.Util.linear(FloatRange.UNIT_CLOSED, 0.0, radius));
 				SequencePath path = SequencePath.builder().withPolicy(Policy.JOIN).addPaths(offset1.getPath(), offset2.getPath()).closeAndBuild();
 				return Collections.singletonList(new PathContour(path));
 			}
 			default:
 			if (!tag.isEmpty() || !showStroke) return Collections.emptyList();
-			final FloatMapping mapping;
-			switch (widthMapping) {
-			case "MEDIUM" : mapping = FloatMapping.Util.constant(FloatRange.UNIT_CLOSED, 20f); break;
-			case "THIN" : mapping = FloatMapping.Util.constant(FloatRange.UNIT_CLOSED, 10f); break;
-			case "TAPER" : mapping = FloatMapping.Util.linear(FloatRange.UNIT_CLOSED, 40f, 20f); break;
-			case "POINT" : mapping = FloatMapping.Util.linear(FloatRange.UNIT_CLOSED, 40f, 0f); break;
-			case "BULGE" : mapping = BULGE; break;
-			default: throw new IllegalStateException("Unsupported widthMapping: " + widthMapping);
-			}
+			final FloatMapping mapping = switch (widthMapping) {
+                case "MEDIUM" -> FloatMapping.Util.constant(FloatRange.UNIT_CLOSED, 20.0);
+                case "THIN" -> FloatMapping.Util.constant(FloatRange.UNIT_CLOSED, 10.0);
+                case "TAPER" -> FloatMapping.Util.linear(FloatRange.UNIT_CLOSED, 40.0, 20.0);
+                case "POINT" -> FloatMapping.Util.linear(FloatRange.UNIT_CLOSED, 40.0, 0.0);
+                case "BULGE" -> BULGE;
+                default -> throw new IllegalStateException("Unsupported widthMapping: " + widthMapping);
+            };
 
-			final Cap cap;
-			switch (capName) {
-			case "ROUND": cap = Cap.ROUND_CAP; break;
-			case "SQUARE": cap = Cap.SQUARE_CAP; break;
-			case "BUTT": cap = Cap.BUTT_CAP; break;
-			default: throw new IllegalStateException("Unsupported capName: " + capName);
-			}
+            final Cap cap = switch (capName) {
+                case "ROUND" -> Cap.ROUND_CAP;
+                case "SQUARE" -> Cap.SQUARE_CAP;
+                case "BUTT" -> Cap.BUTT_CAP;
+                default -> throw new IllegalStateException("Unsupported capName: " + capName);
+            };
 
-			final Join join;
-			switch (joinName) {
-			case "ROUND": join = Join.ROUND_JOIN; break;
-			case "BEVEL": join = Join.BEVEL_JOIN; break;
-			default: throw new IllegalStateException("Unsupported joinName: " + joinName);
-			}
+            final Join join = switch (joinName) {
+                case "ROUND" -> Join.ROUND_JOIN;
+                case "BEVEL" -> Join.BEVEL_JOIN;
+                default -> throw new IllegalStateException("Unsupported joinName: " + joinName);
+            };
 
-			final Dash dash;
-			switch (dashName) {
-			case "EVERYWHERE" : dash = Dash.EVERYWHERE_DASH; break;
-			case "DASHED" : dash = PatternDash.single(80, 80); break;
-			case "DOT DASH": dash = PatternDash.pattern(200, new FloatRange(25, 125), new FloatRange(150, 200)); break;
-			default: throw new IllegalStateException("Unsupported dashName: " + dashName);
-			}
+            final Dash dash = switch (dashName) {
+                case "EVERYWHERE" -> Dash.EVERYWHERE_DASH;
+                case "DASHED" -> PatternDash.single(80, 80);
+                case "DOT DASH" -> PatternDash.pattern(200, new FloatRange(25, 125), new FloatRange(150, 200));
+                default -> throw new IllegalStateException("Unsupported dashName: " + dashName);
+            };
 
-			com.tomgibara.geom.stroke.Stroke stroke = new com.tomgibara.geom.stroke.Stroke(new Outline(join, mapping), cap, dash);
+            com.tomgibara.geom.stroke.Stroke stroke = new com.tomgibara.geom.stroke.Stroke(new Outline(join, mapping), cap, dash);
 			Path path = getUnderlyingPath();
 			return stroke.stroke(path);
 			}
@@ -832,14 +840,14 @@ public class InteractiveGeometry extends JFrame {
 				Point center = points[0];
 				Vector v1 = points[1].vectorFrom(center);
 				Vector v2 = points[2].vectorFrom(center);
-				float theta = v1.getAngle();
-				float phi = v2.getAngle();
-				float TWO_PI = 2f * (float) Math.PI;
-				if (theta < 0f) theta += TWO_PI;
-				if (phi < 0f) phi += TWO_PI;
+				double theta = v1.getAngle();
+				double phi = v2.getAngle();
+				double TWO_PI = 2.0 * Math.PI;
+				if (theta < 0.0) theta += TWO_PI;
+				if (phi < 0.0) phi += TWO_PI;
 				phi += 3 * TWO_PI;
-				float a = v1.getMagnitude();
-				float b = v2.getMagnitude();
+				double a = v1.getMagnitude();
+				double b = v2.getMagnitude();
 				return Spiral.from(center, theta, phi, a, b).getPath();
 			}
 			case ELLIPTICAL_ARC: {
@@ -850,7 +858,7 @@ public class InteractiveGeometry extends JFrame {
 				Vector v2 = b.vectorFrom(c);
 				Transform t = Transform.components(v1.x, v1.y, v2.x, v2.y, c.x, c.y);
 //				Vector eigenValues = t.getEigenValues();
-//				Transform diag = Transform.components(eigenValues.x, 0f, 0f, eigenValues.y, 0f, 0f);
+//				Transform diag = Transform.components(eigenValues.x, 0.0, 0.0, eigenValues.y, 0.0, 0.0);
 //				Transform basis = t.getEigenBasis();
 //				Transform inv = basis.getInverse();
 //				Transform prod = inv.apply(diag).apply(basis);
@@ -865,16 +873,16 @@ public class InteractiveGeometry extends JFrame {
 //					geom = Ellipse.fromRadius(c, Norm.L2.magnitude(v1.x, v1.y));
 //				}
 
-				//Transform tmp = Transform.rotation((float) (Math.random() * Math.PI * 2.0));
-				//float x = (float) Math.random();
-				//float y = (float) Math.random();
+				//Transform tmp = Transform.rotation((double) (Math.random() * Math.PI * 2.0));
+				//double x = (double) Math.random();
+				//double y = (double) Math.random();
 				//Transform tmp = Transform.scale(x, y);
 				//System.out.println(x + " " + y + " -> " + tmp.getEigenValues());
 				//System.out.println("MAJ " + geom.getMajorRadius() + " MIN " + geom.getMinorRadius());
 //				System.out.println(geom.getMajorRadius() + " " + geom.getMinorRadius());
 				Transform basis = geom.getTransform().getEigenBasis();
 				geom = Ellipse.fromTransform(basis.apply(geom.getTransform()));
-				return geom.arc(0, 0.9f).getPath();
+				return geom.arc(0, 0.9).getPath();
 			}
 			case ELLIPTICAL: {
 				Point c = points[0];
@@ -890,6 +898,13 @@ public class InteractiveGeometry extends JFrame {
 				}
 			case ARC:
 				return EllipticalArc.circularArcThroughThreePoints(points[0], points[1], points[2]).getPath();
+			case ARC2:
+				Vector v10 = points[1].vectorTo(points[0]);
+				Vector v12 = points[1].vectorTo(points[2]);
+				Ellipse ellipse = Ellipse.fromRadius(points[1], v10.getMagnitude());
+				return ellipse.arc(v10.getAngle(), v12.getAngle()).getPath();
+			case ARC3:
+				return SequencePath.builder().addPoints(points).asCircularArc(Angles.PI_BY_TWO).closeAndBuild();
 			case BOUNDED_DLS: {
 				LineSegment dls = LineSegment.fromPoints(points[0], points[1]);
 				Rect rect = Rect.atPoints(points[2], points[3]);

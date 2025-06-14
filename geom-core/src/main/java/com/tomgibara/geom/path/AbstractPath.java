@@ -10,18 +10,18 @@ public abstract class AbstractPath implements Path {
 	// static inner classes
 
 	private final static class RectChecker implements Point.Consumer<Void> {
-		private float x = Float.NaN;
-		private float y = Float.NaN;
+		private double x = Double.NaN;
+		private double y = Double.NaN;
 		boolean rect = true;
 
 		@Override
-		public Void addPoint(float x, float y) {
+		public Void addPoint(double x, double y) {
 			if (rect) {
 				if (x == this.x) {
 					this.y = y;
 				} else if (y == this.y) {
 					this.x = x;
-				} else if (x == Float.NaN) {
+				} else if (x == Double.NaN) {
 					this.x = x;
 					this.y = y;
 				} else {
@@ -41,17 +41,17 @@ public abstract class AbstractPath implements Path {
 
 	@Override
 	public Point getStart() {
-		return byIntrinsic().pointAt(0f);
+		return byIntrinsic().pointAt(0.0);
 	}
 
 	@Override
 	public Point getFinish() {
-		return byIntrinsic().pointAt(1f);
+		return byIntrinsic().pointAt(1.0);
 	}
 
 	@Override
-	public float getLength() {
-		return byIntrinsic().lengthAt(1f);
+	public double getLength() {
+		return byIntrinsic().lengthAt(1.0);
 	}
 
 	@Override

@@ -20,14 +20,14 @@ public class Tolerances {
 
 		private int iterationSteps;
 		private int quadratureSteps;
-		private float differential;
-		private float continuityTolerance;
+		private double differential;
+		private double continuityTolerance;
 		private int splitRecursionLimit;
 		// difference in cosine
-		private float cornerTolerance;
-		private float shortestNonLinearCurve;
+		private double cornerTolerance;
+		private double shortestNonLinearCurve;
 		// as a proportion of distance
-		private float leastNonLinearDeviation;
+		private double leastNonLinearDeviation;
 
 		private Builder() {
 			iterationSteps = MAX_ITERATION_STEPS;
@@ -35,11 +35,11 @@ public class Tolerances {
 			//0.0001 caused problems with underflow when offsetting simple curves like a cubic bezier
 			differential = 0.001f;
 			// small values fail on trig based offset curves
-			continuityTolerance = 1f;
+			continuityTolerance = 1.0;
 			splitRecursionLimit = 20;
-			cornerTolerance = 0.005f;
-			shortestNonLinearCurve = 1f;
-			leastNonLinearDeviation = 0.05f;
+			cornerTolerance = 0.005;
+			shortestNonLinearCurve = 1.0;
+			leastNonLinearDeviation = 0.05;
 		}
 
 		private Builder(Tolerances tolerances) {
@@ -67,14 +67,14 @@ public class Tolerances {
 			return this;
 		}
 
-		public Builder setDifferential(float differential) {
-			if (differential <= 0f) throw new IllegalArgumentException("invalid differential");
+		public Builder setDifferential(double differential) {
+			if (differential <= 0.0) throw new IllegalArgumentException("invalid differential");
 			this.differential = differential;
 			return this;
 		}
 
-		public Builder setContinuityTolerance(float continuityTolerance) {
-			if (continuityTolerance < 0f) throw new IllegalArgumentException("invalid continuityTolerance");
+		public Builder setContinuityTolerance(double continuityTolerance) {
+			if (continuityTolerance < 0.0) throw new IllegalArgumentException("invalid continuityTolerance");
 			this.continuityTolerance = continuityTolerance;
 			return this;
 		}
@@ -85,14 +85,14 @@ public class Tolerances {
 			return this;
 		}
 
-		public Builder setShortestNonLinearCurve(float shortestNonLinearCurve) {
-			if (shortestNonLinearCurve <= 0f) throw new IllegalArgumentException("invalid shortestNonLinearCurve");
+		public Builder setShortestNonLinearCurve(double shortestNonLinearCurve) {
+			if (shortestNonLinearCurve <= 0.0) throw new IllegalArgumentException("invalid shortestNonLinearCurve");
 			this.shortestNonLinearCurve = shortestNonLinearCurve;
 			return this;
 		}
 
-		public Builder setLeastNonLinearDeviation(float leastNonLinearDeviation) {
-			if (leastNonLinearDeviation <= 0f) throw new IllegalArgumentException("invalid leastNonLinearDeviation");
+		public Builder setLeastNonLinearDeviation(double leastNonLinearDeviation) {
+			if (leastNonLinearDeviation <= 0.0) throw new IllegalArgumentException("invalid leastNonLinearDeviation");
 			this.leastNonLinearDeviation = leastNonLinearDeviation;
 			return this;
 		}
@@ -105,15 +105,15 @@ public class Tolerances {
 
 	private final int iterationSteps;
 	private final int quadratureSteps;
-	private final float differential;
-	private final float continuityTolerance;
-	final float powContinuityTolerance;
+	private final double differential;
+	private final double continuityTolerance;
+	final double powContinuityTolerance;
 	private final int splitRecursionLimit;
-	private final float cornerTolerance;
-	private final float shortestNonLinearCurve;
-	final float powShortestNonLinearCurve;
-	private final float leastNonLinearDeviation;
-	final float powLeastNonLinearDeviation;
+	private final double cornerTolerance;
+	private final double shortestNonLinearCurve;
+	final double powShortestNonLinearCurve;
+	private final double leastNonLinearDeviation;
+	final double powLeastNonLinearDeviation;
 
 	private Tolerances(Builder builder) {
 		this.iterationSteps = builder.iterationSteps;
@@ -141,7 +141,7 @@ public class Tolerances {
 		return quadratureSteps;
 	}
 
-	public float getDifferential() {
+	public double getDifferential() {
 		return differential;
 	}
 
@@ -149,19 +149,19 @@ public class Tolerances {
 		return splitRecursionLimit;
 	}
 
-	public float getContinuityTolerance() {
+	public double getContinuityTolerance() {
 		return continuityTolerance;
 	}
 
-	public float getCornerTolerance() {
+	public double getCornerTolerance() {
 		return cornerTolerance;
 	}
 
-	public float getShortestNonLinearCurve() {
+	public double getShortestNonLinearCurve() {
 		return shortestNonLinearCurve;
 	}
 
-	public float getLeastNonLinearDeviation() {
+	public double getLeastNonLinearDeviation() {
 		return leastNonLinearDeviation;
 	}
 

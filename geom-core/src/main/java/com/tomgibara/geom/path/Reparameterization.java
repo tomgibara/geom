@@ -21,39 +21,39 @@ public abstract class Reparameterization implements Parameterization {
 	}
 
 	@Override
-	public Point pointAt(float p) {
+	public Point pointAt(double p) {
 		return z.pointAt(map(p));
 	}
 
 	@Override
-	public Vector tangentAt(float p) {
+	public Vector tangentAt(double p) {
 		return z.tangentAt(map(p));
 	}
 
 	@Override
-	public PointPath pointTangentAt(float p) {
+	public PointPath pointTangentAt(double p) {
 		return z.pointTangentAt(map(p));
 	}
 
 	@Override
-	public SplitPath splitAt(float p) {
+	public SplitPath splitAt(double p) {
 		return z.splitAt(map(p));
 	}
 
 	@Override
-	public Path segment(float minP, float maxP) {
+	public Path segment(double minP, double maxP) {
 		return z.segment(map(minP), map(maxP));
 	}
 
 	@Override
-	public float parameterNearest(Point pt) {
+	public double parameterNearest(Point pt) {
 		if (pt == null) throw new IllegalArgumentException("null pt");
 		return unmap(z.parameterNearest(pt));
 	}
 
 	@Override
 	public Path.Location location() {
-		return new Path.Location(this, 0f);
+		return new Path.Location(this, 0.0);
 	}
 
 	@Override
@@ -72,9 +72,9 @@ public abstract class Reparameterization implements Parameterization {
 	}
 
 	//TODO could this default to length mapping?
-	protected abstract float map(float p);
+	protected abstract double map(double p);
 
-	protected abstract float unmap(float q);
+	protected abstract double unmap(double q);
 
 	private Path.Corner unmap(Path.Corner corner) {
 		return new Path.Corner(this, unmap(corner.getParameter()), corner.getPoint(), corner.getStartTangent(), corner.getFinishTangent());

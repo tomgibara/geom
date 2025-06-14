@@ -5,32 +5,32 @@ import com.tomgibara.geom.transform.Transform;
 
 public final class Line implements Geometric, Linear {
 
-	public static final Line X_AXIS = new Line(Vector.UNIT_X, 0f);
-	public static final Line Y_AXIS = new Line(Vector.UNIT_Y, 0f);
+	public static final Line X_AXIS = new Line(Vector.UNIT_X, 0.0);
+	public static final Line Y_AXIS = new Line(Vector.UNIT_Y, 0.0);
 
-	private static float dot(Vector v, Point p) {
+	private static double dot(Vector v, Point p) {
 		// equivalent to v.dot(p.vectorFromOrigin());
 		return v.x * p.x + v.y * p.y;
 	}
 
-	public static Line fromAngle(float angle, float distFromOrigin) {
-		if (distFromOrigin < 0f) throw new IllegalArgumentException("negative distFromOrigin");
+	public static Line fromAngle(double angle, double distFromOrigin) {
+		if (distFromOrigin < 0.0) throw new IllegalArgumentException("negative distFromOrigin");
 		return new Line(new Vector(angle), distFromOrigin);
 	}
 
-	public static Line fromAngle(float angle) {
-		return new Line(new Vector(angle), 0f);
+	public static Line fromAngle(double angle) {
+		return new Line(new Vector(angle), 0.0);
 	}
 
-	public static Line fromTangent(Vector tangent, float distFromOrigin) {
+	public static Line fromTangent(Vector tangent, double distFromOrigin) {
 		if (tangent == null) throw new IllegalArgumentException("null tangent");
 		if (tangent.isZero()) throw new IllegalArgumentException("zero tangent");
-		if (distFromOrigin < 0f) throw new IllegalArgumentException("negative distFromOrigin");
+		if (distFromOrigin < 0.0) throw new IllegalArgumentException("negative distFromOrigin");
 		return new Line(tangent.normalized(), distFromOrigin);
 	}
 
 	public static Line fromTangent(Vector tangent) {
-		return fromTangent(tangent, 0f);
+		return fromTangent(tangent, 0.0);
 	}
 
 	public static Line fromTangentAtPoint(Vector tangent, Point point) {
@@ -39,7 +39,7 @@ public final class Line implements Geometric, Linear {
 		if (point == null) throw new IllegalArgumentException("null point");
 		tangent = tangent.normalized();
 		Vector normal = tangent.rotateThroughRightAngles(1);
-		float distFromOrigin = dot(normal, point);
+		double distFromOrigin = dot(normal, point);
 		return distFromOrigin < 0 ? new Line(tangent.negated(), -distFromOrigin) : new Line(tangent, normal, distFromOrigin);
 	}
 
@@ -50,30 +50,30 @@ public final class Line implements Geometric, Linear {
 
 	private final Vector tangent;
 	private final Vector normal; // points away from origin
-	private final float distFromOrigin;
+	private final double distFromOrigin;
 
-	private Line(Vector tangent, float distFromOrigin) {
+	private Line(Vector tangent, double distFromOrigin) {
 		this(tangent, tangent.rotateThroughRightAngles(1), distFromOrigin);
 	}
 
-	private Line(Vector tangent, Vector normal, float distFromOrigin) {
+	private Line(Vector tangent, Vector normal, double distFromOrigin) {
 		this.tangent = tangent;
 		this.normal = normal;
 		this.distFromOrigin = distFromOrigin;
 	}
 
-	public float getDistFromOrigin() {
+	public double getDistFromOrigin() {
 		return distFromOrigin;
 	}
 
 	public boolean isThroughOrigin() {
-		return distFromOrigin == 0f;
+		return distFromOrigin == 0.0;
 	}
 
 	public Line parallelLineThrough(Point pt) {
 		if (pt == null) throw new IllegalArgumentException("null pt");
-		float d = dot(normal, pt);
-		if (d < 0f) return new Line(tangent.negated(), -d);
+		double d = dot(normal, pt);
+		if (d < 0.0) return new Line(tangent.negated(), -d);
 		return d == distFromOrigin ? this : new Line(tangent, normal, d);
 	}
 
@@ -100,7 +100,7 @@ public final class Line implements Geometric, Linear {
 	public Point nearestPointTo(Point pt) {
 		if (pt == null) throw new IllegalArgumentException("null pt");
 		if (pt.isOrigin()) return getNearestPointToOrigin();
-		float d = dot(normal, pt); // distance to pt on parallel line
+		double d = dot(normal, pt); // distance to pt on parallel line
 		if (d == distFromOrigin) return pt; // quick check to see if pt already on line
 		// vector to travel back to line from pt
 		return normal.scaled(distFromOrigin - d).translate(pt);
@@ -115,10 +115,10 @@ public final class Line implements Geometric, Linear {
 
 		// horizontal case
 		if (tangent.isParallelToXAxis()) {
-			float y = distFromOrigin * tangent.x;
+			double y = distFromOrigin * tangent.x;
 			if (!yRange.containsValue(y)) return null;
-			float s;
-			float f;
+			double s;
+			double f;
 			if (tangent.x < 0) {
 				s = rect.minX;
 				f = rect.maxX;
@@ -131,10 +131,10 @@ public final class Line implements Geometric, Linear {
 
 		// vertical case
 		if (tangent.isParallelToYAxis()) {
-			float x = distFromOrigin * -tangent.y;
+			double x = distFromOrigin * -tangent.y;
 			if (!xRange.containsValue(x)) return null;
-			float s;
-			float f;
+			double s;
+			double f;
 			if (tangent.y < 0) {
 				s = rect.maxY;
 				f = rect.minY;
@@ -149,13 +149,13 @@ public final class Line implements Geometric, Linear {
 		Point p1 = null;
 		Point p2 = null;
 		{
-			float minY = yAt(rect.minX);
+			double minY = yAt(rect.minX);
 			if (yRange.containsValue(minY)) {
 				p1 = new Point(rect.minX, minY);
 			}
 		}
 		{
-			float maxY = yAt(rect.maxX);
+			double maxY = yAt(rect.maxX);
 			if (yRange.containsValue(maxY)) {
 				Point p = new Point(rect.maxX, maxY);
 				if (p1 == null) {
@@ -166,7 +166,7 @@ public final class Line implements Geometric, Linear {
 			}
 		}
 		if (p2 == null) {
-			float minX = xAt(rect.minY);
+			double minX = xAt(rect.minY);
 			if (xRange.containsValue(minX)) {
 				Point p = new Point(minX, rect.minY);
 				if (p1 == null) {
@@ -178,7 +178,7 @@ public final class Line implements Geometric, Linear {
 		}
 		if (p1 == null) return null;
 		{
-			float maxX = xAt(rect.maxY);
+			double maxX = xAt(rect.maxY);
 			if (xRange.containsValue(maxX)) {
 				p2 = new Point(maxX, rect.maxY);
 			}
@@ -190,14 +190,14 @@ public final class Line implements Geometric, Linear {
 
 	@Override
 	public int sideOf(Point point) {
-		float dist = normal.dot(normal);
-		float d = dist - distFromOrigin;
-		if (d == 0f) return 0;
-		return d < 0f ? -1 : 1;
+		double dist = normal.dot(normal);
+		double d = dist - distFromOrigin;
+		if (d == 0.0) return 0;
+		return d < 0.0 ? -1 : 1;
 	}
 
 	@Override
-	public int sideOf(float x, float y) {
+	public int sideOf(double x, double y) {
 		return sideOf(new Point(x, y));
 	}
 
@@ -217,15 +217,14 @@ public final class Line implements Geometric, Linear {
 
 	@Override
 	public int hashCode() {
-		return normal.hashCode() ^ Float.floatToIntBits(distFromOrigin);
+		return normal.hashCode() + Double.hashCode(distFromOrigin);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) return true;
-		if (!(obj instanceof Line)) return false;
-		Line that = (Line) obj;
-		if (this.distFromOrigin != that.distFromOrigin) return false;
+		if (!(obj instanceof Line that)) return false;
+        if (this.distFromOrigin != that.distFromOrigin) return false;
 		if (this.normal.equals(that.normal)) return false;
 		return true;
 	}
@@ -235,11 +234,11 @@ public final class Line implements Geometric, Linear {
 		return distFromOrigin + " from origin at " + tangent.getAngle();
 	}
 
-	private float yAt(float x) {
+	private double yAt(double x) {
 		return (distFromOrigin - normal.x * x) / normal.y;
 	}
 
-	private float xAt(float y) {
+	private double xAt(double y) {
 		return (distFromOrigin - normal.y * y) / normal.x;
 	}
 

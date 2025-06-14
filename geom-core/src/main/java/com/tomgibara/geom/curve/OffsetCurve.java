@@ -3,7 +3,6 @@ package com.tomgibara.geom.curve;
 import static com.tomgibara.geom.floats.FloatMapping.Util.compose;
 import static com.tomgibara.geom.floats.FloatMapping.Util.linear;
 
-import com.tomgibara.geom.core.LineSegment;
 import com.tomgibara.geom.core.Norm;
 import com.tomgibara.geom.core.Point;
 import com.tomgibara.geom.core.Rect;
@@ -34,10 +33,10 @@ public final class OffsetCurve extends Curve {
 
 	private final Parameterization.ByLength param;
 	private final FloatMapping mapping;
-	private final float length;
+	private final double length;
 	private final boolean constant;
 
-	private OffsetCurve(Path path, FloatMapping mapping, float length) {
+	private OffsetCurve(Path path, FloatMapping mapping, double length) {
 		this.mapping = mapping;
 		this.length = path.getLength();
 		param = path.byLength();
@@ -45,24 +44,24 @@ public final class OffsetCurve extends Curve {
 	}
 
 	@Override
-	public Point pointAt(float t) {
+	public Point pointAt(double t) {
 		t = clamp(t);
 		// convert to length
-		float p = t * length;
+		double p = t * length;
 		// obtain point and tangent
 		PointPath pp = param.pointTangentAt(p);
 		// compute the displacement
-		float d = mapping.map(t);
+		double d = mapping.map(t);
 		// derive the point
 		return pp.getTangent().rotateThroughRightAngles(1).scaled(d).translate(pp.getStart());
 	}
 
 	@Override
-	public SplitCurvePath splitAt(float t) {
+	public SplitCurvePath splitAt(double t) {
 		t = clamp(t);
-		FloatMapping m1 = compose(linear(FloatRange.UNIT_CLOSED, 0f, t), mapping);
-		FloatMapping m2 = compose(linear(FloatRange.UNIT_CLOSED, t, 1f), mapping);
-		float p = t * length;
+		FloatMapping m1 = compose(linear(FloatRange.UNIT_CLOSED, 0.0, t), mapping);
+		FloatMapping m2 = compose(linear(FloatRange.UNIT_CLOSED, t, 1.0), mapping);
+		double p = t * length;
 		SplitPath split = param.splitAt(t * length);
 		OffsetCurve c1 = new OffsetCurve(split.getFirstPath(), m1, p);
 		OffsetCurve c2 = new OffsetCurve(split.getLastPath(), m2, length - p);
@@ -70,7 +69,7 @@ public final class OffsetCurve extends Curve {
 	}
 
 	@Override
-	public Vector tangentAt(float t) {
+	public Vector tangentAt(double t) {
 		return constant ? param.tangentAt(t * length) : super.tangentAt(t);
 	}
 
@@ -86,20 +85,19 @@ public final class OffsetCurve extends Curve {
 
 	@Override
 	protected boolean isLinear() {
-		Point p0 = pointAt(0f);
-		Point p1 = pointAt(1f);
+		Point p0 = pointAt(0.0);
+		Point p1 = pointAt(1.0);
 		// hack test
 		Vector v1 = p1.vectorFrom(p0);
 		if (v1.isZero()) return true;
-		PointPath pp = pointTangentAt(0.5f);
+		PointPath pp = pointTangentAt(0.5);
 		Point pm = Point.Util.midpoint(p0, p1);
 		//TODO use configurable threshold
-		float pd = Norm.L2.powDistanceBetween(pm, pp.getStart());
-		if (pd > 0.00001f) return false;
-		float d = pp.getTangent().dot(v1.normalized());
-		if (Math.abs(1f - d) > 0.001) return false;
-		return true;
-	}
+		double pd = Norm.L2.powDistanceBetween(pm, pp.getStart());
+		if (pd > 0.00001) return false;
+		double d = pp.getTangent().dot(v1.normalized());
+        return !(Math.abs(1.0 - d) > 0.001);
+    }
 
 	private boolean isMappingPeriodic() {
 		if (constant) return true;

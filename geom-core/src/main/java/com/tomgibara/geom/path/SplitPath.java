@@ -38,7 +38,7 @@ public class SplitPath implements CompositePath {
 	}
 
 	@Override
-	public float getLength() {
+	public double getLength() {
 		return p1.getLength() + p2.getLength();
 	}
 
@@ -179,7 +179,7 @@ public class SplitPath implements CompositePath {
 	}
 
 	@Override
-	public Path.Location locateAtLength(float p) {
+	public Path.Location locateAtLength(double p) {
 		return getParams().locateAtLength(p);
 	}
 
@@ -208,8 +208,8 @@ public class SplitPath implements CompositePath {
 	}
 
 	private boolean isSmoothAtSplit() {
-		Vector t1 = p1.byIntrinsic().tangentAt(1f);
-		Vector t2 = p2.byIntrinsic().tangentAt(0f);
+		Vector t1 = p1.byIntrinsic().tangentAt(1.0);
+		Vector t2 = p2.byIntrinsic().tangentAt(0.0);
 		//TODO should have a tolerance here
 		return t1.equals(t2);
 	}
